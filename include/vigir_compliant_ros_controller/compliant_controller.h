@@ -68,7 +68,7 @@ namespace compliant_controller
  * \p hardware_interface::VelocityJointInterface, and \p hardware_interface::EffortJointInterface are supported 
  * out-of-the-box.
  */
-template <class HardwareInterface>
+template <class SegmentImpl, class HardwareInterface>
 class CompliantController : public controller_interface::Controller<HardwareInterface>
 {
 public:

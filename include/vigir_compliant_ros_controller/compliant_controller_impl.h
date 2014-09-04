@@ -70,13 +70,16 @@ bool CompliantController<SegmentImpl, HardwareInterface>::init(HardwareInterface
                                                                      ros::NodeHandle&   root_nh,
                                                                      ros::NodeHandle&   controller_nh)
 {
-  using namespace internal;
-
   // Cache controller node handle
   controller_nh_ = controller_nh;
 
   // Controller name
-  name_ = getLeafNamespace(controller_nh_);
+  //name_ = getLeafNamespace(controller_nh_);
+  
+    // Preeallocate resources
+  current_state_    = typename Segment::State(n_joints);
+  desired_state_    = typename Segment::State(n_joints);
+  state_error_      = typename Segment::State(n_joints);
 
   return true;
 }
