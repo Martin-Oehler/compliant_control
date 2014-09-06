@@ -34,7 +34,7 @@
 namespace compliant_controller
 {
 
-template <class HardwareInterface>
+template <class SegmentImpl, class HardwareInterface>
 inline void CompliantController<SegmentImpl, HardwareInterface>::
 starting(const ros::Time& time)
 {
@@ -45,27 +45,26 @@ starting(const ros::Time& time)
   time_data_.initRT(time_data);
 
   // Initialize last state update time
-  last_state_publish_time_ = time_data.uptime;
+  //last_state_publish_time_ = time_data.uptime;
 
   // Hardware interface adapter
   hw_iface_adapter_.starting(time_data.uptime);
 }
 
-template <class HardwareInterface>
+template <class SegmentImpl, class HardwareInterface>
 inline void CompliantController<SegmentImpl, HardwareInterface>::
 stopping(const ros::Time& time)
 {
 
 }
 
-template <class HardwareInterface>
+template <class SegmentImpl, class HardwareInterface>
 CompliantController<SegmentImpl, HardwareInterface>::
 CompliantController()
   : verbose_(false) // Set to true during debugging
-
 {}
 
-template <class HardwareInterface>
+template <class SegmentImpl, class HardwareInterface>
 bool CompliantController<SegmentImpl, HardwareInterface>::init(HardwareInterface* hw,
                                                                      ros::NodeHandle&   root_nh,
                                                                      ros::NodeHandle&   controller_nh)
@@ -76,6 +75,8 @@ bool CompliantController<SegmentImpl, HardwareInterface>::init(HardwareInterface
   // Controller name
   //name_ = getLeafNamespace(controller_nh_);
   
+  size_t n_joints = 0;
+
     // Preeallocate resources
   current_state_    = typename Segment::State(n_joints);
   desired_state_    = typename Segment::State(n_joints);
@@ -84,11 +85,21 @@ bool CompliantController<SegmentImpl, HardwareInterface>::init(HardwareInterface
   return true;
 }
 
-template <class HardwareInterface>
+template <class SegmentImpl, class HardwareInterface>
 void CompliantController<SegmentImpl, HardwareInterface>::
 update(const ros::Time& time, const ros::Duration& period)
 {
-  //Perform control calculation here.
+  // Update time data
+  TimeData time_data;
+  time_data.time   = time;                                     // Cache current time
+  time_data.period = period;                                   // Cache current control period
+  time_data.uptime = time_data_.readFromRT()->uptime + period; // Update controller uptime
+  time_data_.writeFromNonRT(time_data); // TODO: Grrr, we need a lock-free data structure here!
+
+
+   //Perform control calculation here.
+
+
   
   //Write desired_state and state_error to hardware interface adapter
   hw_iface_adapter_.updateCommand(time_data.uptime, time_data.period,

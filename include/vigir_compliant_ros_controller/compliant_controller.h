@@ -58,6 +58,8 @@
 
 #include <joint_trajectory_controller/hardware_interface_adapter.h>
 
+#include <joint_trajectory_controller/joint_trajectory_segment.h>
+
 namespace compliant_controller
 {
 
@@ -102,6 +104,8 @@ private:
     ros::Time     uptime; ///< Controller uptime. Set to zero at every restart.
   };
 
+  typedef joint_trajectory_controller::JointTrajectorySegment<SegmentImpl> Segment;
+
   typedef HardwareInterfaceAdapter<HardwareInterface, typename Segment::State> HwIfaceAdapter;
   typedef typename HardwareInterface::ResourceHandleType JointHandle;
 
@@ -110,6 +114,10 @@ private:
   std::vector<JointHandle>  joints_;             ///< Handles to controlled joints.
   std::vector<bool>         angle_wraparound_;   ///< Whether controlled joints wrap around or not.
   std::vector<std::string>  joint_names_;        ///< Controlled joint names.
+
+  typename Segment::State current_state_;    ///< Preallocated workspace variable.
+  typename Segment::State desired_state_;    ///< Preallocated workspace variable.
+  typename Segment::State state_error_;      ///< Preallocated workspace variable.
 
   HwIfaceAdapter            hw_iface_adapter_;   ///< Adapts desired trajectory state to HW interface.
 
@@ -122,6 +130,6 @@ private:
 
 } // namespace
 
-#include <vigir_compliant_controller/compliant_controller_impl.h>
+#include <vigir_compliant_ros_controller/compliant_controller_impl.h>
 
 #endif // header guard

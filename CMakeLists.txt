@@ -84,9 +84,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES vigir_compliant_ros_controller
-#  CATKIN_DEPENDS control_toolbox controller_interface controller_manager hardware_interface joint_trajectory_controller realtime_tools urdf
+INCLUDE_DIRS include
+LIBRARIES vigir_compliant_ros_controller
+CATKIN_DEPENDS control_toolbox controller_interface controller_manager hardware_interface joint_trajectory_controller realtime_tools urdf
 #  DEPENDS system_lib
 )
 
@@ -98,25 +98,13 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a cpp library
-# add_library(vigir_compliant_ros_controller
-#   src/${PROJECT_NAME}/vigir_compliant_ros_controller.cpp
-# )
+add_library(${PROJECT_NAME} src/compliant_controllers.cpp)
 
-## Declare a cpp executable
-# add_executable(vigir_compliant_ros_controller_node src/vigir_compliant_ros_controller_node.cpp)
-
-## Add cmake target dependencies of the executable/library
-## as an example, message headers may need to be generated before nodes
-# add_dependencies(vigir_compliant_ros_controller_node vigir_compliant_ros_controller_generate_messages_cpp)
-
-## Specify libraries to link a library or executable target against
-# target_link_libraries(vigir_compliant_ros_controller_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 #############
 ## Install ##
