@@ -54,7 +54,11 @@
 // ros_controls
 #include <controller_interface/controller.h>
 #include <hardware_interface/joint_command_interface.h>
+#include <hardware_interface/joint_state_interface.h>
+#include <hardware_interface/force_torque_sensor_interface.h>
+
 #include <hardware_interface/internal/demangle_symbol.h>
+
 
 #include <joint_trajectory_controller/hardware_interface_adapter.h>
 
@@ -71,7 +75,7 @@ namespace compliant_controller
  * out-of-the-box.
  */
 template <class SegmentImpl, class HardwareInterface>
-class CompliantController : public controller_interface::Controller<HardwareInterface>
+class CompliantController : public controller_interface::ControllerBase
 {
 public:
 
@@ -92,6 +96,14 @@ public:
 
   void update(const ros::Time& time, const ros::Duration& period);
   /*\}*/
+
+  /** \name Non Real-Time Safe Functions
+   *\{*/
+
+  // These two functions have to be implemented as we derive from ControllerBase
+  std::string getHardwareInterfaceType() const;
+  bool initRequest(hardware_interface::RobotHW* hw, ros::NodeHandle& root_nh, ros::NodeHandle &controller_nh,
+                           std::set<std::string>& claimed_resources);
 
 private:
 
@@ -125,6 +137,8 @@ private:
 
   // ROS API
   ros::NodeHandle    controller_nh_;
+
+  hardware_interface::ForceTorqueSensorHandle force_torque_sensor_handle_;
 
 };
 

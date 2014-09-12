@@ -109,6 +109,54 @@ update(const ros::Time& time, const ros::Duration& period)
   //publishState(time_data.uptime);
 }
 
+template <class SegmentImpl, class HardwareInterface>
+std::string CompliantController<SegmentImpl, HardwareInterface>::
+getHardwareInterfaceType() const
+{
+  return "This_controller_derives_from_ControllerBase_so_cannot_return_a_proper_single_interface_type";
+}
+
+template <class SegmentImpl, class HardwareInterface>
+bool CompliantController<SegmentImpl, HardwareInterface>::
+initRequest(hardware_interface::RobotHW* hw, ros::NodeHandle& root_nh, ros::NodeHandle &controller_nh,
+                         std::set<std::string>& claimed_resources)
+{
+  //We have access to the full hw interface here and thus can grab multiple components of it
+
+  //Get pointer to joint state interface
+  hardware_interface::JointStateInterface* joint_state_interface = hw->get<hardware_interface::JointStateInterface>();
+
+  if (!joint_state_interface){
+    ROS_ERROR("Unable to retrieve JointStateInterface for compliant controller!");
+    return false;
+  }
+
+  // @TODO: Initialize own joint state representation so it points to the pointers given
+  // in joint_state_interface´s JointHandles
+  // A lot of code from JointTrajectoryController´s init() can be re-used (e.g. copied)
+  // for this.
+
+  hardware_interface::ForceTorqueSensorInterface * force_torque_sensor_interface = hw->get<hardware_interface::ForceTorqueSensorInterface >();
+
+  if (!force_torque_sensor_interface){
+    ROS_ERROR("Unable to retrieve ForceTorqueSensorInterface for compliant controller!");
+    return false;
+  }
+
+  // Get the name of the FT sensor to use from the parameter server
+  std::string ft_sensor_name = "ft_sensor";
+  controller_nh_.getParam("ft_sensor_name", ft_sensor_name);
+
+  // Query the interface for the selected FT sensor
+  // @TODO: Properly check if the handle is valid (getHandle() throws exception if not?)
+  force_torque_sensor_handle_ = force_torque_sensor_interface->getHandle(ft_sensor_name);
+
+
+  // At the end, this probably per default calls the controller´s init (which we pre-empted)
+  // @TODO Verify this is indeed the case
+  //this->init(joint_state_interface, root_nh, controller_nh);
+}
+
 
 } // namespace
 
