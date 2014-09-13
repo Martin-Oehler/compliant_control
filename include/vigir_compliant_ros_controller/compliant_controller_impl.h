@@ -89,6 +89,7 @@ template <class SegmentImpl, class HardwareInterface>
 void CompliantController<SegmentImpl, HardwareInterface>::
 update(const ros::Time& time, const ros::Duration& period)
 {
+
   // Update time data
   TimeData time_data;
   time_data.time   = time;                                     // Cache current time
@@ -100,13 +101,14 @@ update(const ros::Time& time, const ros::Duration& period)
    //Perform control calculation here.
 
 
-  
+  /*
   //Write desired_state and state_error to hardware interface adapter
   hw_iface_adapter_.updateCommand(time_data.uptime, time_data.period,
                                   desired_state_, state_error_);
 
   // Publish state
   //publishState(time_data.uptime);
+  */
 }
 
 template <class SegmentImpl, class HardwareInterface>
@@ -121,6 +123,16 @@ bool CompliantController<SegmentImpl, HardwareInterface>::
 initRequest(hardware_interface::RobotHW* hw, ros::NodeHandle& root_nh, ros::NodeHandle &controller_nh,
                          std::set<std::string>& claimed_resources)
 {
+  controller_nh_ = controller_nh;
+  // Looking at the implementation of initRequest we have to do checks for state and set it at end.
+  // See https://github.com/ros-controls/ros_control/blob/indigo-devel/controller_interface/include/controller_interface/controller.h#L98
+  // check if construction finished cleanly
+  if (state_ != CONSTRUCTED){
+    ROS_ERROR("Cannot initialize this controller because it failed to be constructed");
+    return false;
+  }
+
+
   //We have access to the full hw interface here and thus can grab multiple components of it
 
   //Get pointer to joint state interface
@@ -151,10 +163,12 @@ initRequest(hardware_interface::RobotHW* hw, ros::NodeHandle& root_nh, ros::Node
   // @TODO: Properly check if the handle is valid (getHandle() throws exception if not?)
   force_torque_sensor_handle_ = force_torque_sensor_interface->getHandle(ft_sensor_name);
 
+  // @TODO: Could make below nicer by using getLeafNamespace as in joint_trajectory_controller
+  ROS_INFO("Using force torque sensor: %s for compliant controller %s", ft_sensor_name.c_str(), controller_nh_.getNamespace().c_str());
 
-  // At the end, this probably per default calls the controller´s init (which we pre-empted)
-  // @TODO Verify this is indeed the case
-  //this->init(joint_state_interface, root_nh, controller_nh);
+
+  state_ = INITIALIZED;
+  return true;
 }
 
 
