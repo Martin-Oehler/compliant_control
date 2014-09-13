@@ -58,10 +58,6 @@
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <!-- You can specify that this package is a metapackage here: -->
-    <!-- <metapackage/> -->
-
-    <!-- Other tools can request additional information be placed here -->
-
+    <controller_interface plugin="${prefix}/vigir_compliant_ros_control_plugins.xml"/>
   </export>
 </package>

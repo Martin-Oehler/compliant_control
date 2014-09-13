@@ -1,0 +1,24 @@
+<library path="lib/libvigir_compliant_ros_controller">
+
+  <class name="position_controllers/CompliantController"
+         type="position_controllers::CompliantController"
+         base_class_type="controller_interface::ControllerBase">
+    <description>
+    </description>
+  </class>
+
+  <class name="velocity_controllers/CompliantController"
+         type="velocity_controllers::CompliantController"
+         base_class_type="controller_interface::ControllerBase">
+    <description>
+    </description>
+  </class>
+
+  <class name="effort_controllers/CompliantController"
+         type="effort_controllers::CompliantController"
+         base_class_type="controller_interface::ControllerBase">
+    <description>
+    </description>
+  </class>
+
+</library>
