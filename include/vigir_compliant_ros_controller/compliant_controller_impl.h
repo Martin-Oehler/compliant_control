@@ -48,7 +48,7 @@ starting(const ros::Time& time)
   //last_state_publish_time_ = time_data.uptime;
 
   // Hardware interface adapter
-  hw_iface_adapter_.starting(time_data.uptime);
+//  hw_iface_adapter_.starting(time_data.uptime);
 }
 
 template <class SegmentImpl, class HardwareInterface>
@@ -78,9 +78,9 @@ bool CompliantController<SegmentImpl, HardwareInterface>::init(HardwareInterface
   size_t n_joints = 0;
 
     // Preeallocate resources
-  current_state_    = typename Segment::State(n_joints);
-  desired_state_    = typename Segment::State(n_joints);
-  state_error_      = typename Segment::State(n_joints);
+//  current_state_    = typename Segment::State(n_joints);
+//  desired_state_    = typename Segment::State(n_joints);
+//  state_error_      = typename Segment::State(n_joints);
 
   return true;
 }
@@ -99,6 +99,7 @@ update(const ros::Time& time, const ros::Duration& period)
 
 
    //Perform control calculation here.
+  ROS_INFO_STREAM_THROTTLE(1, "compliant controller is running");
 
 
   /*
@@ -120,52 +121,69 @@ getHardwareInterfaceType() const
 
 template <class SegmentImpl, class HardwareInterface>
 bool CompliantController<SegmentImpl, HardwareInterface>::
-initRequest(hardware_interface::RobotHW* hw, ros::NodeHandle& root_nh, ros::NodeHandle &controller_nh,
+initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros::NodeHandle &controller_nh,
                          std::set<std::string>& claimed_resources)
 {
-  controller_nh_ = controller_nh;
-  // Looking at the implementation of initRequest we have to do checks for state and set it at end.
-  // See https://github.com/ros-controls/ros_control/blob/indigo-devel/controller_interface/include/controller_interface/controller.h#L98
   // check if construction finished cleanly
   if (state_ != CONSTRUCTED){
     ROS_ERROR("Cannot initialize this controller because it failed to be constructed");
     return false;
   }
 
+  // get a pointer to the hardware interface
+  HardwareInterface* hw = robot_hw->get<HardwareInterface>();
+  if (!hw)
+  {
+      ROS_ERROR_STREAM("This controller requires a hardware interface of type " << hardware_interface::internal::demangledTypeName<HardwareInterface>() << ".");
+      return false;
+  }
+
 
   //We have access to the full hw interface here and thus can grab multiple components of it
 
   //Get pointer to joint state interface
-  hardware_interface::JointStateInterface* joint_state_interface = hw->get<hardware_interface::JointStateInterface>();
+  // I don't think we actually need this, since we get the joint handles via the command interface.
+  //hardware_interface::JointStateInterface* joint_state_interface = robot_hw->get<hardware_interface::JointStateInterface>();
 
-  if (!joint_state_interface){
-    ROS_ERROR("Unable to retrieve JointStateInterface for compliant controller!");
-    return false;
-  }
-
+//  if (!joint_state_interface){
+//    ROS_ERROR("Unable to retrieve JointStateInterface for compliant controller!");
+//    return false;
+//  }
   // @TODO: Initialize own joint state representation so it points to the pointers given
   // in joint_state_interface´s JointHandles
   // A lot of code from JointTrajectoryController´s init() can be re-used (e.g. copied)
   // for this.
 
-  hardware_interface::ForceTorqueSensorInterface * force_torque_sensor_interface = hw->get<hardware_interface::ForceTorqueSensorInterface >();
-
+  // get pointer to force torque sensor interface
+  hardware_interface::ForceTorqueSensorInterface * force_torque_sensor_interface = robot_hw->get<hardware_interface::ForceTorqueSensorInterface >();
   if (!force_torque_sensor_interface){
     ROS_ERROR("Unable to retrieve ForceTorqueSensorInterface for compliant controller!");
     return false;
   }
-
   // Get the name of the FT sensor to use from the parameter server
   std::string ft_sensor_name = "ft_sensor";
-  controller_nh_.getParam("ft_sensor_name", ft_sensor_name);
-
+  controller_nh.getParam("ft_sensor_name", ft_sensor_name);
   // Query the interface for the selected FT sensor
-  // @TODO: Properly check if the handle is valid (getHandle() throws exception if not?)
-  force_torque_sensor_handle_ = force_torque_sensor_interface->getHandle(ft_sensor_name);
+  try {
+      force_torque_sensor_handle_ = force_torque_sensor_interface->getHandle(ft_sensor_name);
+  } catch (hardware_interface::HardwareInterfaceException e) {
+      ROS_ERROR_STREAM("Couldn't get handle for f/t sensor: " << ft_sensor_name << ". " << e.what());
+      return false;
+  }
+
+  // init controller
+  hw->clearClaims();
+  if (!init(hw, root_nh, controller_nh))
+  {
+    ROS_ERROR("Failed to initialize the controller");
+    return false;
+  }
+  claimed_resources = hw->getClaims();
+  hw->clearClaims();
+
 
   // @TODO: Could make below nicer by using getLeafNamespace as in joint_trajectory_controller
   ROS_INFO("Using force torque sensor: %s for compliant controller %s", ft_sensor_name.c_str(), controller_nh_.getNamespace().c_str());
-
 
   state_ = INITIALIZED;
   return true;

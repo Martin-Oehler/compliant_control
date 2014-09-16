@@ -74,6 +74,15 @@ find_package(catkin REQUIRED COMPONENTS
 #   std_msgs  # Or other packages containing msgs
 # )
 
+set(HEADERS
+    include/${PROJECT_NAME}/compliant_controller.h
+    include/${PROJECT_NAME}/compliant_controller_impl.h
+)
+
+set(SOURCES
+    src/compliant_controllers.cpp
+)
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -102,7 +111,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME} src/compliant_controllers.cpp)
+add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 

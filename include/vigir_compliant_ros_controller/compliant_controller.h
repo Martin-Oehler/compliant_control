@@ -59,9 +59,6 @@
 
 #include <hardware_interface/internal/demangle_symbol.h>
 
-
-#include <joint_trajectory_controller/hardware_interface_adapter.h>
-
 #include <joint_trajectory_controller/joint_trajectory_segment.h>
 
 namespace compliant_controller
@@ -118,20 +115,19 @@ private:
 
   typedef joint_trajectory_controller::JointTrajectorySegment<SegmentImpl> Segment;
 
-  typedef HardwareInterfaceAdapter<HardwareInterface, typename Segment::State> HwIfaceAdapter;
+//  typedef HardwareInterfaceAdapter<HardwareInterface, typename Segment::State> HwIfaceAdapter;
   typedef typename HardwareInterface::ResourceHandleType JointHandle;
 
   bool                      verbose_;            ///< Hard coded verbose flag to help in debugging
   std::string               name_;               ///< Controller name.
   std::vector<JointHandle>  joints_;             ///< Handles to controlled joints.
-  std::vector<bool>         angle_wraparound_;   ///< Whether controlled joints wrap around or not.
   std::vector<std::string>  joint_names_;        ///< Controlled joint names.
 
-  typename Segment::State current_state_;    ///< Preallocated workspace variable.
-  typename Segment::State desired_state_;    ///< Preallocated workspace variable.
-  typename Segment::State state_error_;      ///< Preallocated workspace variable.
+//  typename Segment::State current_state_;    ///< Preallocated workspace variable.
+//  typename Segment::State desired_state_;    ///< Preallocated workspace variable.
+//  typename Segment::State state_error_;      ///< Preallocated workspace variable.
 
-  HwIfaceAdapter            hw_iface_adapter_;   ///< Adapts desired trajectory state to HW interface.
+//  HwIfaceAdapter            hw_iface_adapter_;   ///< Adapts desired trajectory state to HW interface.
 
   realtime_tools::RealtimeBuffer<TimeData> time_data_;
 
