@@ -15,7 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system)
+find_package(Eigen REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -77,10 +78,21 @@ find_package(catkin REQUIRED COMPONENTS
 set(HEADERS
     include/${PROJECT_NAME}/compliant_controller.h
     include/${PROJECT_NAME}/compliant_controller_impl.h
+    include/${PROJECT_NAME}/AdmittanceController.h
+    include/${PROJECT_NAME}/CartForceController.h
+    include/${PROJECT_NAME}/CartVelController.h
+    include/${PROJECT_NAME}/ConversionHelper.h
+    include/${PROJECT_NAME}/JointAdmittanceController.h
+    include/${PROJECT_NAME}/CustomTypes.h
 )
 
 set(SOURCES
     src/compliant_controllers.cpp
+    src/AdmittanceController.cpp
+    src/CartForceController.cpp
+    src/CartVelController.cpp
+    src/ConversionHelper.cpp
+    src/JointAdmittanceController.cpp
 )
 
 ###################################
@@ -109,6 +121,7 @@ CATKIN_DEPENDS control_toolbox controller_interface controller_manager hardware_
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${Eigen_INCLUDE_DIRS}
 )
 
 add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
