@@ -36,7 +36,7 @@
 #include <Eigen/StdVector>
 #include <vector>
 
-namespace control {
+namespace compliant_controller {
 
 typedef Eigen::VectorXd             VectorNd;
 typedef Eigen::MatrixXd             MatrixNd;
@@ -48,6 +48,15 @@ typedef Eigen::Vector3d             Vector3d;
 typedef Eigen::Vector2d             Vector2d;
 typedef Eigen::Quaternion<double>   Quatd;
 typedef Eigen::Matrix<double, 6, Eigen::Dynamic> Jacobian;
+
+typedef struct CartState {
+    CartState() {
+        position = Vector6d::Zero();
+        velocity = Vector6d::Zero();
+    }
+    Vector6d position;
+    Vector6d velocity;
+} CartState;
 
 typedef struct Wrench
 {

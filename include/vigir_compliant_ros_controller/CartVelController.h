@@ -18,7 +18,7 @@
 
 #include <vigir_compliant_ros_controller/CustomTypes.h>
 
-namespace control {
+namespace compliant_controller {
     class CartVelController {
     public:
         CartVelController() : initialized(false) {}

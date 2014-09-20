@@ -1,6 +1,6 @@
 #include <vigir_compliant_ros_controller/ConversionHelper.h>
 
-namespace control {
+namespace compliant_controller {
     void ConversionHelper::kdlToEigen(const KDL::Frame& frame, Vector6d& pose) {
         for (unsigned int i = 0; i < 3; i++) {
             pose(i) = frame.p(i);
@@ -28,17 +28,23 @@ namespace control {
             vector(i) = jnt_array(i);
         }
     }
+    void ConversionHelper::kdlToEigen(const KDL::Vector& kdl_vector, Vector3d& eigen_vector) {
+        for (unsigned int i = 0; i < 3; i++) {
+            eigen_vector(i) = kdl_vector(i);
+        }
+    }
 
-    void ConversionHelper::kdlToEigen(const VectorNd& vector, KDL::JntArray& jnt_array) {
+    void ConversionHelper::eigenToKdl(const Vector6d& vector, KDL::Twist& twist) {
+        for (unsigned int i = 0; i < vector.size(); i++) {
+            twist(i) = vector(i);
+        }
+    }
+
+    void ConversionHelper::eigenToKdl(const VectorNd& vector, KDL::JntArray& jnt_array) {
         jnt_array.resize(vector.size());
         for (unsigned int i = 0; i < vector.size(); i++) {
             jnt_array(i) = vector(i);
         }
     }
 
-    void ConversionHelper::kdlToEigen(const KDL::Vector& kdl_vector, Vector3d& eigen_vector) {
-        for (unsigned int i = 0; i < 3; i++) {
-            eigen_vector(i) = kdl_vector(i);
-        }
-    }
 }

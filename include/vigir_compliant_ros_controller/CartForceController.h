@@ -14,7 +14,7 @@
 #include <kdl/jacobian.hpp>
 #include <kdl/jntarray.hpp>
 
-namespace control {
+namespace compliant_controller {
     class CartForceController {
     public:
         CartForceController() : initialized_(false), jac_updated_(false) {}

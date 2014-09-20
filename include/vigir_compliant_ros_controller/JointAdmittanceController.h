@@ -14,7 +14,7 @@
 #include <kdl/jacobian.hpp>
 #include <kdl/jntarray.hpp>
 
-namespace control {
+namespace compliant_controller {
     class JointAdmittanceController {
     public:
         JointAdmittanceController() : initialized_(false) {}

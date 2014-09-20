@@ -3,7 +3,7 @@
 
 #include <vigir_compliant_ros_controller/CustomTypes.h>
 
-namespace control {
+namespace compliant_controller {
     class AdmittanceController {
     public:
         void init(double inertia, double damping, double stiffness, double step_size);

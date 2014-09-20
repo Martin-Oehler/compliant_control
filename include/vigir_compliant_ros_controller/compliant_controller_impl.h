@@ -31,13 +31,17 @@
 #define COMPLIANT_CONTROLLER_IMPL_H
 
 
-namespace compliant_controller
-{
+namespace compliant_controller {
+
+template <class SegmentImpl, class HardwareInterface>
+CompliantController<SegmentImpl, HardwareInterface>::
+CompliantController()
+  : verbose_(false) // Set to true during debugging
+{}
 
 template <class SegmentImpl, class HardwareInterface>
 inline void CompliantController<SegmentImpl, HardwareInterface>::
-starting(const ros::Time& time)
-{
+starting(const ros::Time& time) {
   // Update time data
   TimeData time_data;
   time_data.time   = time;
@@ -53,22 +57,14 @@ starting(const ros::Time& time)
 
 template <class SegmentImpl, class HardwareInterface>
 inline void CompliantController<SegmentImpl, HardwareInterface>::
-stopping(const ros::Time& time)
-{
+stopping(const ros::Time& time) {
 
 }
 
 template <class SegmentImpl, class HardwareInterface>
-CompliantController<SegmentImpl, HardwareInterface>::
-CompliantController()
-  : verbose_(false) // Set to true during debugging
-{}
-
-template <class SegmentImpl, class HardwareInterface>
 bool CompliantController<SegmentImpl, HardwareInterface>::init(HardwareInterface* hw,
                                                                      ros::NodeHandle&   root_nh,
-                                                                     ros::NodeHandle&   controller_nh)
-{
+                                                                     ros::NodeHandle&   controller_nh) {
   // Cache controller node handle
   controller_nh_ = controller_nh;
 
@@ -87,8 +83,7 @@ bool CompliantController<SegmentImpl, HardwareInterface>::init(HardwareInterface
 
 template <class SegmentImpl, class HardwareInterface>
 void CompliantController<SegmentImpl, HardwareInterface>::
-update(const ros::Time& time, const ros::Duration& period)
-{
+update(const ros::Time& time, const ros::Duration& period){
 
   // Update time data
   TimeData time_data;

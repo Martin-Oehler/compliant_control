@@ -3,7 +3,7 @@
 #include <kdl_parser/kdl_parser.hpp>
 #include <vigir_compliant_ros_controller/ConversionHelper.h>
 
-namespace control {
+namespace compliant_controller {
 bool JointAdmittanceController::init(ros::NodeHandle& node, std::string root_name, std::string tip_name, VectorNd& inertia, VectorNd& damping, VectorNd& stiffness, double step_size) {
     std::string robot_description;
 
@@ -60,7 +60,7 @@ void JointAdmittanceController::calcCompliantPosition(const VectorNd &q0, const 
     Jacobian J;
     KDL::Jacobian Jtmp(kdl_chain_.getNrOfJoints());
     KDL::JntArray qtmp(kdl_chain_.getNrOfJoints());
-    ConversionHelper::kdlToEigen(q_,qtmp);
+    ConversionHelper::eigenToKdl(q_,qtmp);
     jnt_to_jac_solver_->JntToJac(qtmp,Jtmp);
     ConversionHelper::kdlToEigen(Jtmp, J);
 

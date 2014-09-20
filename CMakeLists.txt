@@ -84,6 +84,7 @@ set(HEADERS
     include/${PROJECT_NAME}/ConversionHelper.h
     include/${PROJECT_NAME}/JointAdmittanceController.h
     include/${PROJECT_NAME}/CustomTypes.h
+    include/${PROJECT_NAME}/hardware_interface_adapter.h
 )
 
 set(SOURCES

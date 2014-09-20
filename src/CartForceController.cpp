@@ -3,7 +3,7 @@
 #include <kdl_parser/kdl_parser.hpp>
 #include <vigir_compliant_ros_controller/ConversionHelper.h>
 
-namespace control {
+namespace compliant_controller {
     bool CartForceController::init(const ros::NodeHandle& node, const std::string& root_name, const std::string& tip_name, double kp, double kd, double ki, double step_size) {
         Vector6d kp_vector;
         Vector6d kd_vector;
@@ -73,11 +73,11 @@ namespace control {
         if (kdl_chain_.getNrOfJoints() != 6) {
             return ;
         }
-        control::VectorNd q(6);
+        VectorNd q(6);
         for (unsigned int i = 0; i < 6; i++) {
             q(i) = state->position[22+i];
         }
-        control::VectorNd qdot(6);
+        VectorNd qdot(6);
         for (unsigned int i = 0; i < 6; i++) {
             qdot(i) = state->velocity[22+i];
         }

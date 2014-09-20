@@ -1,6 +1,6 @@
 #include <vigir_compliant_ros_controller/AdmittanceController.h>
 
-namespace control {
+namespace compliant_controller {
     void AdmittanceController::init(double inertia, double damping, double stiffness, double step_size) {
         for (unsigned int i = 0; i < Md.size(); i++) {
             Md(i) = inertia;
