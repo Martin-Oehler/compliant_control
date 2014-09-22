@@ -57,6 +57,9 @@
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/force_torque_sensor_interface.h>
 
+// compliant control
+#include <vigir_compliant_ros_controller/hardware_interface_adapter.h>
+
 #include <hardware_interface/internal/demangle_symbol.h>
 
 #include <joint_trajectory_controller/joint_trajectory_segment.h>
@@ -113,9 +116,7 @@ private:
     ros::Time     uptime; ///< Controller uptime. Set to zero at every restart.
   };
 
-  typedef joint_trajectory_controller::JointTrajectorySegment<SegmentImpl> Segment;
-
-//  typedef HardwareInterfaceAdapter<HardwareInterface, typename Segment::State> HwIfaceAdapter;
+  typedef HardwareInterfaceAdapter<HardwareInterface, compliant_controller::Vector6d> HwIfaceAdapter;
   typedef typename HardwareInterface::ResourceHandleType JointHandle;
 
   bool                      verbose_;            ///< Hard coded verbose flag to help in debugging
@@ -123,18 +124,22 @@ private:
   std::vector<JointHandle>  joints_;             ///< Handles to controlled joints.
   std::vector<std::string>  joint_names_;        ///< Controlled joint names.
 
-//  typename Segment::State current_state_;    ///< Preallocated workspace variable.
-//  typename Segment::State desired_state_;    ///< Preallocated workspace variable.
-//  typename Segment::State state_error_;      ///< Preallocated workspace variable.
+  compliant_controller::Vector6d current_state_;    ///< Preallocated workspace variable.
+  compliant_controller::Vector6d desired_state_;    ///< Preallocated workspace variable.
+  compliant_controller::Vector6d state_error_;      ///< Preallocated workspace variable.
 
-//  HwIfaceAdapter            hw_iface_adapter_;   ///< Adapts desired trajectory state to HW interface.
+  HwIfaceAdapter            hw_iface_adapter_;   ///< Adapts desired trajectory state to HW interface.
 
   realtime_tools::RealtimeBuffer<TimeData> time_data_;
 
   // ROS API
   ros::NodeHandle    controller_nh_;
 
+  // additional hardware interfaces
   hardware_interface::ForceTorqueSensorHandle force_torque_sensor_handle_;
+
+  std::string getLeafNamespace(const ros::NodeHandle& nh);
+  std::vector<std::string> getStrings(const ros::NodeHandle& nh, const std::string& param_name);
 
 };
 

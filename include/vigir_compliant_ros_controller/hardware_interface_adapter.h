@@ -39,10 +39,10 @@ class HardwareInterfaceAdapter<hardware_interface::VelocityJointInterface, compl
 public:
     bool init(std::vector<hardware_interface::JointHandle>& joint_handles, ros::NodeHandle& controller_nh) {
         joint_handles_ptr_ = &joint_handles;
-        if (!cart_force_controller_.init(controller_nh, joint_handles[0].getName(), joint_handles[joint_handles.size()-1].getName, 10, 1, 0, 0.001)) {
+        if (!cart_force_controller_.init(controller_nh, joint_handles[0].getName(), joint_handles[joint_handles.size()-1].getName(), 10, 1, 0, 0.001)) {
             return false;
         }
-        if (!cart_vel_controller_.init(controller_nh, joint_handles[0].getName(), joint_handles[joint_handles.size()-1].getName)) {
+        if (!cart_vel_controller_.init(controller_nh, joint_handles[0].getName(), joint_handles[joint_handles.size()-1].getName())) {
             return false;
         }
     }
@@ -55,8 +55,8 @@ public:
                        const compliant_controller::CartState&         desired_state,
                        const compliant_controller::CartState&         state_error) {
         // update joint state
-        compliant_controller::VectorNd joint_positions(joint_handles_ptr->size());
-        compliant_controller::VectorNd joint_velocities(joint_handles_ptr->size());
+        compliant_controller::VectorNd joint_positions(joint_handles_ptr_->size());
+        compliant_controller::VectorNd joint_velocities(joint_handles_ptr_->size());
         for (unsigned int i = 0; i < joint_positions.size(); i++) {
             joint_positions(i) = (*joint_handles_ptr_)[i].getPosition();
             joint_velocities(i) = (*joint_handles_ptr_)[i].getVelocity();

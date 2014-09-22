@@ -48,35 +48,56 @@ starting(const ros::Time& time) {
   time_data.uptime = ros::Time(0.0);
   time_data_.initRT(time_data);
 
+  desired_state_ = Vector6d::Zero();
+  current_state_ = Vector6d::Zero();
+  state_error_ = Vector6d::Zero();
+
   // Initialize last state update time
   //last_state_publish_time_ = time_data.uptime;
 
   // Hardware interface adapter
-//  hw_iface_adapter_.starting(time_data.uptime);
+  hw_iface_adapter_.starting(time_data.uptime);
 }
 
 template <class SegmentImpl, class HardwareInterface>
 inline void CompliantController<SegmentImpl, HardwareInterface>::
 stopping(const ros::Time& time) {
-
+    //hw_iface_adapter.stopping(time_data_.uptime);
 }
 
 template <class SegmentImpl, class HardwareInterface>
-bool CompliantController<SegmentImpl, HardwareInterface>::init(HardwareInterface* hw,
-                                                                     ros::NodeHandle&   root_nh,
-                                                                     ros::NodeHandle&   controller_nh) {
+bool CompliantController<SegmentImpl, HardwareInterface>::
+init(HardwareInterface* hw, ros::NodeHandle&   root_nh, ros::NodeHandle&   controller_nh) {
   // Cache controller node handle
   controller_nh_ = controller_nh;
 
   // Controller name
-  //name_ = getLeafNamespace(controller_nh_);
-  
-  size_t n_joints = 0;
+  name_ = getLeafNamespace(controller_nh_);
 
-    // Preeallocate resources
-//  current_state_    = typename Segment::State(n_joints);
-//  desired_state_    = typename Segment::State(n_joints);
-//  state_error_      = typename Segment::State(n_joints);
+  double update_step = 0.001;
+
+  // controlled joints
+  joint_names_ = getStrings(controller_nh_, "joints");
+  if (joint_names_.empty()) {
+      ROS_ERROR("No joint names set for controller.");
+      return false;
+  }
+  size_t n_joints = joint_names_.size();
+  joints_.resize(n_joints);
+  for (unsigned int i = 0; i < n_joints; i++) {
+      try {
+          joints_[i] = hw->getHandle(joint_names_[i]);
+      } catch (hardware_interface::HardwareInterfaceException e) {
+          ROS_ERROR_STREAM("Couldn't find handle for " << joint_names_[i] << ". " << e.what() << std::endl);
+          return false;
+      }
+  }
+
+  // hardware interface adapter
+  hw_iface_adapter_.init(joints_, controller_nh_);
+
+  // ROS API subscribed topics
+  // TODO subscribe to interactive marker topic
 
   return true;
 }
@@ -93,18 +114,15 @@ update(const ros::Time& time, const ros::Duration& period){
   time_data_.writeFromNonRT(time_data); // TODO: Grrr, we need a lock-free data structure here!
 
 
-   //Perform control calculation here.
-  ROS_INFO_STREAM_THROTTLE(1, "compliant controller is running");
 
-
-  /*
   //Write desired_state and state_error to hardware interface adapter
+  // TODO read desired state from interactive marker topic
   hw_iface_adapter_.updateCommand(time_data.uptime, time_data.period,
                                   desired_state_, state_error_);
 
   // Publish state
   //publishState(time_data.uptime);
-  */
+
 }
 
 template <class SegmentImpl, class HardwareInterface>
@@ -182,6 +200,45 @@ initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros
 
   state_ = INITIALIZED;
   return true;
+}
+
+template <class SegmentImpl, class HardwareInterface>
+std::string CompliantController<SegmentImpl, HardwareInterface>::
+getLeafNamespace(const ros::NodeHandle& nh) {
+  const std::string complete_ns = nh.getNamespace();
+  std::size_t id   = complete_ns.find_last_of("/");
+  return complete_ns.substr(id + 1);
+}
+
+template <class SegmentImpl, class HardwareInterface>
+std::vector<std::string> CompliantController<SegmentImpl, HardwareInterface>::
+getStrings(const ros::NodeHandle& nh, const std::string& param_name) {
+  using namespace XmlRpc;
+  XmlRpcValue xml_array;
+  if (!nh.getParam(param_name, xml_array))
+  {
+    ROS_ERROR_STREAM("Could not find '" << param_name << "' parameter (namespace: " << nh.getNamespace() << ").");
+    return std::vector<std::string>();
+  }
+  if (xml_array.getType() != XmlRpcValue::TypeArray)
+  {
+    ROS_ERROR_STREAM("The '" << param_name << "' parameter is not an array (namespace: " <<
+                     nh.getNamespace() << ").");
+    return std::vector<std::string>();
+  }
+
+  std::vector<std::string> out;
+  for (int i = 0; i < xml_array.size(); ++i)
+  {
+    if (xml_array[i].getType() != XmlRpcValue::TypeString)
+    {
+      ROS_ERROR_STREAM("The '" << param_name << "' parameter contains a non-string element (namespace: " <<
+                       nh.getNamespace() << ").");
+      return std::vector<std::string>();
+    }
+    out.push_back(static_cast<std::string>(xml_array[i]));
+  }
+  return out;
 }
 
 
