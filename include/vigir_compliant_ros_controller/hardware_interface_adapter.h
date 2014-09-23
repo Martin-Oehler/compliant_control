@@ -17,7 +17,7 @@
 template <class HardwareInterface, class State>
 class HardwareInterfaceAdapter {
 public:
-  bool init(std::vector<typename HardwareInterface::ResourceHandleType>& joint_handles, ros::NodeHandle& controller_nh)
+  bool init(std::vector<std::string> segment_names, std::vector<typename HardwareInterface::ResourceHandleType>& joint_handles, ros::NodeHandle& controller_nh)
   {
     return false;
   }
@@ -37,12 +37,12 @@ public:
 template <>
 class HardwareInterfaceAdapter<hardware_interface::VelocityJointInterface, compliant_controller::CartState> {
 public:
-    bool init(std::vector<hardware_interface::JointHandle>& joint_handles, ros::NodeHandle& controller_nh) {
+    bool init(std::vector<std::string> segment_names, std::vector<hardware_interface::JointHandle>& joint_handles, ros::NodeHandle& controller_nh) {
         joint_handles_ptr_ = &joint_handles;
-        if (!cart_force_controller_.init(controller_nh, joint_handles[0].getName(), joint_handles[joint_handles.size()-1].getName(), 10, 1, 0, 0.001)) {
+        if (!cart_force_controller_.init(controller_nh, segment_names[0], segment_names[segment_names.size()-1], 10, 1, 0, 0.001)) {
             return false;
         }
-        if (!cart_vel_controller_.init(controller_nh, joint_handles[0].getName(), joint_handles[joint_handles.size()-1].getName())) {
+        if (!cart_vel_controller_.init(controller_nh, segment_names[0], segment_names[segment_names.size()-1])) {
             return false;
         }
     }

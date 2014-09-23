@@ -42,15 +42,29 @@ CompliantController()
 template <class SegmentImpl, class HardwareInterface>
 inline void CompliantController<SegmentImpl, HardwareInterface>::
 starting(const ros::Time& time) {
+    ROS_INFO_STREAM("Starting controller: " << name_);
   // Update time data
   TimeData time_data;
   time_data.time   = time;
   time_data.uptime = ros::Time(0.0);
   time_data_.initRT(time_data);
 
-  desired_state_ = Vector6d::Zero();
-  current_state_ = Vector6d::Zero();
-  state_error_ = Vector6d::Zero();
+  state_cmd_.position = Vector6d::Zero();
+  state_cmd_.velocity = Vector6d::Zero();
+  desired_state_.position = Vector6d::Zero();
+  desired_state_.velocity = Vector6d::Zero();
+  current_state_.position = Vector6d::Zero();
+  current_state_.velocity = Vector6d::Zero();
+  state_error_.position = Vector6d::Zero();
+  state_error_.velocity = Vector6d::Zero();
+
+  // for testing
+  state_cmd_.position(0) = 0.0130977;
+  state_cmd_.position(1) = -0.400299;
+  state_cmd_.position(2) = -0.205006;
+  state_cmd_.position(3) = 1.33341;
+  state_cmd_.position(4) = 0.193883;
+  state_cmd_.position(5) = 1.78593;
 
   // Initialize last state update time
   //last_state_publish_time_ = time_data.uptime;
@@ -62,6 +76,7 @@ starting(const ros::Time& time) {
 template <class SegmentImpl, class HardwareInterface>
 inline void CompliantController<SegmentImpl, HardwareInterface>::
 stopping(const ros::Time& time) {
+    ROS_INFO_STREAM("Stopping controller: " << name_);
     //hw_iface_adapter.stopping(time_data_.uptime);
 }
 
@@ -73,8 +88,21 @@ init(HardwareInterface* hw, ros::NodeHandle&   root_nh, ros::NodeHandle&   contr
 
   // Controller name
   name_ = getLeafNamespace(controller_nh_);
+  ROS_INFO_STREAM("Initializing controller " << name_);
 
+  // admittance parameters
+  // TODO read from parameter server
   double update_step = 0.001;
+  inertia_ = 150;
+  damping_ = 250;
+  stiffness_ = 400;
+
+  // controlled segments
+  segment_names_ = getStrings(controller_nh_, "segments");
+  if (segment_names_.empty()) {
+      ROS_ERROR("No segment names set for controller.");
+      return false;
+  }
 
   // controlled joints
   joint_names_ = getStrings(controller_nh_, "joints");
@@ -92,9 +120,18 @@ init(HardwareInterface* hw, ros::NodeHandle&   root_nh, ros::NodeHandle&   contr
           return false;
       }
   }
+  ROS_INFO_STREAM("Found " << n_joints << " joints.");
+  std::stringstream joint_list;
+  for (unsigned int i = 0; i < n_joints; i++) {
+      joint_list << segment_names_[i] << "\t\t(" <<joints_[i].getName() << ")" << std::endl;
+  }
+  ROS_INFO_STREAM("Controlled segments (joints): " << std::endl << joint_list.str());
 
   // hardware interface adapter
-  hw_iface_adapter_.init(joints_, controller_nh_);
+  hw_iface_adapter_.init(segment_names_, joints_, controller_nh_);
+
+  // admittance controller
+  admittance_controller_.init(inertia_, damping_, stiffness_, update_step);
 
   // ROS API subscribed topics
   // TODO subscribe to interactive marker topic
@@ -104,7 +141,7 @@ init(HardwareInterface* hw, ros::NodeHandle&   root_nh, ros::NodeHandle&   contr
 
 template <class SegmentImpl, class HardwareInterface>
 void CompliantController<SegmentImpl, HardwareInterface>::
-update(const ros::Time& time, const ros::Duration& period){
+update(const ros::Time& time, const ros::Duration& period) {
 
   // Update time data
   TimeData time_data;
@@ -113,16 +150,30 @@ update(const ros::Time& time, const ros::Duration& period){
   time_data.uptime = time_data_.readFromRT()->uptime + period; // Update controller uptime
   time_data_.writeFromNonRT(time_data); // TODO: Grrr, we need a lock-free data structure here!
 
+  // TODO read state cmd from interactive marker topic
+  admittance_controller_.calcCompliantPosition(state_cmd_.position, readFTSensor(), desired_state_.position, desired_state_.velocity);
 
 
   //Write desired_state and state_error to hardware interface adapter
-  // TODO read desired state from interactive marker topic
   hw_iface_adapter_.updateCommand(time_data.uptime, time_data.period,
                                   desired_state_, state_error_);
 
   // Publish state
   //publishState(time_data.uptime);
 
+}
+
+template <class SegmentImpl, class HardwareInterface>
+Vector6d CompliantController<SegmentImpl, HardwareInterface>::
+readFTSensor() {
+    const double* force = force_torque_sensor_handle_.getForce();
+    const double* torque = force_torque_sensor_handle_.getTorque();
+    Vector6d force_torque;
+    for (unsigned int i = 0; i < 3; i++) {
+        force_torque(i) = *(force+i);
+        force_torque(i+3) = *(torque+i);
+    }
+    return force_torque;
 }
 
 template <class SegmentImpl, class HardwareInterface>
@@ -150,6 +201,7 @@ initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros
       ROS_ERROR_STREAM("This controller requires a hardware interface of type " << hardware_interface::internal::demangledTypeName<HardwareInterface>() << ".");
       return false;
   }
+  ROS_INFO_STREAM ("Loading controller with hardware interface: " << hardware_interface::internal::demangledTypeName<HardwareInterface>() << ".");
 
 
   //We have access to the full hw interface here and thus can grab multiple components of it
@@ -196,7 +248,7 @@ initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros
 
 
   // @TODO: Could make below nicer by using getLeafNamespace as in joint_trajectory_controller
-  ROS_INFO("Using force torque sensor: %s for compliant controller %s", ft_sensor_name.c_str(), controller_nh_.getNamespace().c_str());
+  ROS_INFO("Using force torque sensor: %s for compliant controller %s", ft_sensor_name.c_str(), getLeafNamespace(controller_nh_).c_str());
 
   state_ = INITIALIZED;
   return true;

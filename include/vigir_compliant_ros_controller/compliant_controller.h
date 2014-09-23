@@ -59,6 +59,7 @@
 
 // compliant control
 #include <vigir_compliant_ros_controller/hardware_interface_adapter.h>
+#include <vigir_compliant_ros_controller/AdmittanceController.h>
 
 #include <hardware_interface/internal/demangle_symbol.h>
 
@@ -106,6 +107,13 @@ public:
                            std::set<std::string>& claimed_resources);
 
 private:
+  Vector6d readFTSensor();
+  std::string getLeafNamespace(const ros::NodeHandle& nh);
+  std::vector<std::string> getStrings(const ros::NodeHandle& nh, const std::string& param_name);
+  double inertia_;
+  double damping_;
+  double stiffness_;
+  AdmittanceController admittance_controller_;
 
   struct TimeData
   {
@@ -116,17 +124,19 @@ private:
     ros::Time     uptime; ///< Controller uptime. Set to zero at every restart.
   };
 
-  typedef HardwareInterfaceAdapter<HardwareInterface, compliant_controller::Vector6d> HwIfaceAdapter;
+  typedef HardwareInterfaceAdapter<HardwareInterface, compliant_controller::CartState> HwIfaceAdapter;
   typedef typename HardwareInterface::ResourceHandleType JointHandle;
 
   bool                      verbose_;            ///< Hard coded verbose flag to help in debugging
   std::string               name_;               ///< Controller name.
   std::vector<JointHandle>  joints_;             ///< Handles to controlled joints.
   std::vector<std::string>  joint_names_;        ///< Controlled joint names.
+  std::vector<std::string> segment_names_;
 
-  compliant_controller::Vector6d current_state_;    ///< Preallocated workspace variable.
-  compliant_controller::Vector6d desired_state_;    ///< Preallocated workspace variable.
-  compliant_controller::Vector6d state_error_;      ///< Preallocated workspace variable.
+  compliant_controller::CartState current_state_;    ///< Preallocated workspace variable.
+  compliant_controller::CartState state_cmd_;
+  compliant_controller::CartState desired_state_;    ///< Preallocated workspace variable.
+  compliant_controller::CartState state_error_;      ///< Preallocated workspace variable.
 
   HwIfaceAdapter            hw_iface_adapter_;   ///< Adapts desired trajectory state to HW interface.
 
@@ -137,9 +147,6 @@ private:
 
   // additional hardware interfaces
   hardware_interface::ForceTorqueSensorHandle force_torque_sensor_handle_;
-
-  std::string getLeafNamespace(const ros::NodeHandle& nh);
-  std::vector<std::string> getStrings(const ros::NodeHandle& nh, const std::string& param_name);
 
 };
 

@@ -21,13 +21,13 @@
 namespace compliant_controller {
     class CartVelController {
     public:
-        CartVelController() : initialized(false) {}
+        CartVelController() : initialized_(false) {}
         bool init(ros::NodeHandle& nh, std::string root_name, std::string endeffector_name);
         bool update(const KDL::Twist &command, VectorNd& velocities);
         void updatePosition(const VectorNd& position);
     private:
         void setCommand(const KDL::Twist& command);
-        bool initialized;
+        bool initialized_;
 
         std::string root_name_;
         std::string endeffector_name_;
