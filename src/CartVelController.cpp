@@ -6,7 +6,7 @@ namespace compliant_controller {
      bool CartVelController::init(ros::NodeHandle& nh, std::string root_name, std::string endeffector_name) {
          std::string robot_description;
 
-         if (!nh.getParam("robot_description", robot_description)) {
+         if (!nh.getParam("/robot_description", robot_description)) {
              ROS_ERROR("Failed to get robot description from parameter server.");
              return false;
          }
@@ -33,13 +33,13 @@ namespace compliant_controller {
             debug << i << ": " << kdl_chain_.getSegment(i).getName() << " (" << kdl_chain_.getSegment(i).getJoint().getName() << ")" << std::endl;
         }
         std::cout << debug.str();
-        initialized = true;
+        initialized_ = true;
         return true;
      }
 
     bool CartVelController::update(const KDL::Twist& command, VectorNd& velocities) {
         // init
-        if (!initialized) {
+        if (!initialized_) {
             ROS_ERROR("Controller wasn't initilized before calling 'update'.");
             return false;
         }

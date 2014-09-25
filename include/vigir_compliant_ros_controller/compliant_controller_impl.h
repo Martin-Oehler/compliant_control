@@ -59,12 +59,12 @@ starting(const ros::Time& time) {
   state_error_.velocity = Vector6d::Zero();
 
   // for testing
-  state_cmd_.position(0) = 0.0130977;
+  state_cmd_.position(0) = 0.0130977+0.5;
   state_cmd_.position(1) = -0.400299;
   state_cmd_.position(2) = -0.205006;
   state_cmd_.position(3) = 1.33341;
   state_cmd_.position(4) = 0.193883;
-  state_cmd_.position(5) = 1.78593;
+  state_cmd_.position(5) = 1.78593+0.5;
 
   // Initialize last state update time
   //last_state_publish_time_ = time_data.uptime;
@@ -82,7 +82,7 @@ stopping(const ros::Time& time) {
 
 template <class SegmentImpl, class HardwareInterface>
 bool CompliantController<SegmentImpl, HardwareInterface>::
-init(HardwareInterface* hw, ros::NodeHandle&   root_nh, ros::NodeHandle&   controller_nh) {
+init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh) {
   // Cache controller node handle
   controller_nh_ = controller_nh;
 
@@ -128,7 +128,10 @@ init(HardwareInterface* hw, ros::NodeHandle&   root_nh, ros::NodeHandle&   contr
   ROS_INFO_STREAM("Controlled segments (joints): " << std::endl << joint_list.str());
 
   // hardware interface adapter
-  hw_iface_adapter_.init(segment_names_, joints_, controller_nh_);
+  if (!hw_iface_adapter_.init(segment_names_, joints_, controller_nh_)) {
+      ROS_ERROR("Initializing hardware interface adapter failed.");
+      return false;
+  }
 
   // admittance controller
   admittance_controller_.init(inertia_, damping_, stiffness_, update_step);
@@ -209,15 +212,10 @@ initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros
   //Get pointer to joint state interface
   // I don't think we actually need this, since we get the joint handles via the command interface.
   //hardware_interface::JointStateInterface* joint_state_interface = robot_hw->get<hardware_interface::JointStateInterface>();
-
 //  if (!joint_state_interface){
 //    ROS_ERROR("Unable to retrieve JointStateInterface for compliant controller!");
 //    return false;
 //  }
-  // @TODO: Initialize own joint state representation so it points to the pointers given
-  // in joint_state_interface´s JointHandles
-  // A lot of code from JointTrajectoryController´s init() can be re-used (e.g. copied)
-  // for this.
 
   // get pointer to force torque sensor interface
   hardware_interface::ForceTorqueSensorInterface * force_torque_sensor_interface = robot_hw->get<hardware_interface::ForceTorqueSensorInterface >();
@@ -235,6 +233,7 @@ initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros
       ROS_ERROR_STREAM("Couldn't get handle for f/t sensor: " << ft_sensor_name << ". " << e.what());
       return false;
   }
+  ROS_INFO("Using force torque sensor: %s for compliant controller %s", ft_sensor_name.c_str(), getLeafNamespace(controller_nh_).c_str());
 
   // init controller
   hw->clearClaims();
@@ -245,10 +244,6 @@ initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros
   }
   claimed_resources = hw->getClaims();
   hw->clearClaims();
-
-
-  // @TODO: Could make below nicer by using getLeafNamespace as in joint_trajectory_controller
-  ROS_INFO("Using force torque sensor: %s for compliant controller %s", ft_sensor_name.c_str(), getLeafNamespace(controller_nh_).c_str());
 
   state_ = INITIALIZED;
   return true;

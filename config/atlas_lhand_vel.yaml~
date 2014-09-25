@@ -1,0 +1,28 @@
+# trajectory controllers ---------------------------------------
+  left_arm_compliant_controller:
+    type: "velocity_controllers/CompliantController"
+    ft_sensor_name: left_hand_ft_sensor
+    joints:
+      - l_arm_shy
+      - l_arm_shx
+      - l_arm_ely
+      - l_arm_elx
+      - l_arm_wry
+      - l_arm_wrx
+#    constraints:
+#      goal_time: &goal_time_constraint 0.6
+#      l_arm_shy:
+#        goal: &goal_pos_constraint 0.02
+#      l_arm_shx:
+#        goal: *goal_pos_constraint
+#      l_arm_ely:
+#        goal: *goal_pos_constraint
+#      l_arm_elx:
+#        goal: *goal_pos_constraint
+#      l_arm_wry:
+#        goal: *goal_pos_constraint
+#      l_arm_wrx:
+#        goal: *goal_pos_constraint
+        
+#    stop_trajectory_duration: 0.0
+#    state_publish_rate: 1000.0

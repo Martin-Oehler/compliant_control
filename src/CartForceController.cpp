@@ -19,7 +19,7 @@ namespace compliant_controller {
     bool CartForceController::init(const ros::NodeHandle &node, const std::string &root_name, const std::string &tip_name, const Matrix6d &Kp, const Matrix6d &Kd, const Matrix6d &Ki, double step_size) {
         std::string robot_description;
 
-        if (!node.getParam("robot_description", robot_description)) {
+        if (!node.getParam("/robot_description", robot_description)) {
             ROS_ERROR("Failed to get robot description from parameter server.");
             return false;
         }

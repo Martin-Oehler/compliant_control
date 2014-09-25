@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   joint_trajectory_controller
   realtime_tools
   urdf
+  kdl_parser
 )
 
 ## System dependencies are found with CMake's conventions
