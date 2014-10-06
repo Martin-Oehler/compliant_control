@@ -63,6 +63,10 @@
 
 #include <hardware_interface/internal/demangle_symbol.h>
 
+// interactive marker
+#include <geometry_msgs/PoseStamped.h>
+
+#include <vigir_compliant_ros_controller/ConversionHelper.h>
 #include <joint_trajectory_controller/joint_trajectory_segment.h>
 
 namespace compliant_controller
@@ -103,10 +107,12 @@ public:
 
   // These two functions have to be implemented as we derive from ControllerBase
   std::string getHardwareInterfaceType() const;
-  bool initRequest(hardware_interface::RobotHW* hw, ros::NodeHandle& root_nh, ros::NodeHandle &controller_nh,
+  bool initRequest(hardware_interface::RobotHW* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh,
                            std::set<std::string>& claimed_resources);
 
 private:
+  void poseCmdUpdate(const geometry_msgs::PoseStampedConstPtr& pose_ptr);
+
   Vector6d readFTSensor();
   std::string getLeafNamespace(const ros::NodeHandle& nh);
   std::vector<std::string> getStrings(const ros::NodeHandle& nh, const std::string& param_name);
@@ -133,10 +139,10 @@ private:
   std::vector<std::string>  joint_names_;        ///< Controlled joint names.
   std::vector<std::string> segment_names_;
 
-  compliant_controller::CartState current_state_;    ///< Preallocated workspace variable.
-  compliant_controller::CartState state_cmd_;
-  compliant_controller::CartState desired_state_;    ///< Preallocated workspace variable.
-  compliant_controller::CartState state_error_;      ///< Preallocated workspace variable.
+  compliant_controller::CartState current_state_;    ///< not used yet, hardware_interface computes the current state itself
+  compliant_controller::CartState state_cmd_;        ///< virtual setpoint
+  compliant_controller::CartState desired_state_;    ///< compliant pose
+  compliant_controller::CartState state_error_;      ///< not used yset
 
   HwIfaceAdapter            hw_iface_adapter_;   ///< Adapts desired trajectory state to HW interface.
 
@@ -144,6 +150,7 @@ private:
 
   // ROS API
   ros::NodeHandle    controller_nh_;
+  ros::Subscriber    pose_sub_;
 
   // additional hardware interfaces
   hardware_interface::ForceTorqueSensorHandle force_torque_sensor_handle_;

@@ -30,6 +30,7 @@
 #ifndef COMPLIANT_CONTROLLER_IMPL_H
 #define COMPLIANT_CONTROLLER_IMPL_H
 
+#include <kdl/frames.hpp>
 
 namespace compliant_controller {
 
@@ -137,7 +138,8 @@ init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controlle
   admittance_controller_.init(inertia_, damping_, stiffness_, update_step);
 
   // ROS API subscribed topics
-  // TODO subscribe to interactive marker topic
+  // TODO add topic name to config
+  pose_sub_ = root_nh.subscribe("/r_arm_pose", 1, &CompliantController::poseCmdUpdate, this);
 
   return true;
 }
@@ -247,6 +249,16 @@ initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros
 
   state_ = INITIALIZED;
   return true;
+}
+
+template <class SegmentImpl, class HardwareInterface>
+void CompliantController<SegmentImpl, HardwareInterface>::
+poseCmdUpdate(const geometry_msgs::PoseStampedConstPtr& pose_ptr) {
+    KDL::Frame kdl_pose;
+    kdl_pose.p = KDL::Vector(pose_ptr->pose.position.x, pose_ptr->pose.position.y, pose_ptr->pose.position.z);
+    kdl_pose.M = KDL::Rotation::Quaternion(pose_ptr->pose.orientation.x, pose_ptr->pose.orientation.y, pose_ptr->pose.orientation.z, pose_ptr->pose.orientation.w);
+    ConversionHelper::kdlToEigen(kdl_pose, state_cmd_.position);
+    ROS_INFO_STREAM(pose_ptr->pose.position.x << " " << pose_ptr->pose.position.y << " " << pose_ptr->pose.position.z);
 }
 
 template <class SegmentImpl, class HardwareInterface>
