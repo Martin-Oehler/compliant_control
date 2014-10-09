@@ -34,6 +34,14 @@ namespace compliant_controller {
         }
     }
 
+    void ConversionHelper::kdlToEigen(const KDL::Rotation& rotation, Matrix3d& rotation_eigen) {
+        for (unsigned int i = 0; i < 3; i++) {
+            for (unsigned int j = 0; j < 3; j++) {
+                rotation_eigen(i, j) = rotation(i, j);
+            }
+        }
+    }
+
     void ConversionHelper::eigenToKdl(const Vector6d& vector, KDL::Twist& twist) {
         for (unsigned int i = 0; i < vector.size(); i++) {
             twist(i) = vector(i);

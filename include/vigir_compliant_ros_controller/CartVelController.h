@@ -25,6 +25,7 @@ namespace compliant_controller {
         bool init(ros::NodeHandle& nh, std::string root_name, std::string endeffector_name);
         bool update(const KDL::Twist &command, VectorNd& velocities);
         void updatePosition(const VectorNd& position);
+        void getTipPose(KDL::Frame& pose);
     private:
         void setCommand(const KDL::Twist& command);
         bool initialized_;

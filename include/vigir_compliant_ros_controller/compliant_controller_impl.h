@@ -60,12 +60,12 @@ starting(const ros::Time& time) {
   state_error_.velocity = Vector6d::Zero();
 
   // for testing
-  state_cmd_.position(0) = 0.0130977+0.5;
+  state_cmd_.position(0) = 0.0130977;
   state_cmd_.position(1) = -0.400299;
   state_cmd_.position(2) = -0.205006;
   state_cmd_.position(3) = 1.33341;
   state_cmd_.position(4) = 0.193883;
-  state_cmd_.position(5) = 1.78593+0.5;
+  state_cmd_.position(5) = 1.78593;
 
   // Initialize last state update time
   //last_state_publish_time_ = time_data.uptime;
@@ -78,12 +78,13 @@ template <class SegmentImpl, class HardwareInterface>
 inline void CompliantController<SegmentImpl, HardwareInterface>::
 stopping(const ros::Time& time) {
     ROS_INFO_STREAM("Stopping controller: " << name_);
-    //hw_iface_adapter.stopping(time_data_.uptime);
+    hw_iface_adapter_.stopping(time);
 }
 
 template <class SegmentImpl, class HardwareInterface>
 bool CompliantController<SegmentImpl, HardwareInterface>::
 init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh) {
+
   // Cache controller node handle
   controller_nh_ = controller_nh;
 
@@ -147,7 +148,6 @@ init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controlle
 template <class SegmentImpl, class HardwareInterface>
 void CompliantController<SegmentImpl, HardwareInterface>::
 update(const ros::Time& time, const ros::Duration& period) {
-
   // Update time data
   TimeData time_data;
   time_data.time   = time;                                     // Cache current time
@@ -157,6 +157,7 @@ update(const ros::Time& time, const ros::Duration& period) {
 
   // TODO read state cmd from interactive marker topic
   admittance_controller_.calcCompliantPosition(state_cmd_.position, readFTSensor(), desired_state_.position, desired_state_.velocity);
+ // ROS_INFO_STREAM_THROTTLE(0.5, "Desired position: " << std::endl << desired_state_.position);
 
 
   //Write desired_state and state_error to hardware interface adapter
@@ -178,6 +179,9 @@ readFTSensor() {
         force_torque(i) = *(force+i);
         force_torque(i+3) = *(torque+i);
     }
+    Matrix3d rot_base_tip = hw_iface_adapter_.getTipTransform();
+    force_torque.block<3,1>(0,0) = rot_base_tip * force_torque.block<3,1>(0,0).eval();
+    force_torque.block<3,1>(3,0) = rot_base_tip * force_torque.block<3,1>(3,0).eval();
     return force_torque;
 }
 
@@ -258,7 +262,6 @@ poseCmdUpdate(const geometry_msgs::PoseStampedConstPtr& pose_ptr) {
     kdl_pose.p = KDL::Vector(pose_ptr->pose.position.x, pose_ptr->pose.position.y, pose_ptr->pose.position.z);
     kdl_pose.M = KDL::Rotation::Quaternion(pose_ptr->pose.orientation.x, pose_ptr->pose.orientation.y, pose_ptr->pose.orientation.z, pose_ptr->pose.orientation.w);
     ConversionHelper::kdlToEigen(kdl_pose, state_cmd_.position);
-    ROS_INFO_STREAM(pose_ptr->pose.position.x << " " << pose_ptr->pose.position.y << " " << pose_ptr->pose.position.z);
 }
 
 template <class SegmentImpl, class HardwareInterface>

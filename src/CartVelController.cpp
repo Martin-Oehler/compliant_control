@@ -1,6 +1,7 @@
 #include <vigir_compliant_ros_controller/CartVelController.h>
 
 #include <kdl_parser/kdl_parser.hpp>
+#include <vigir_compliant_ros_controller/ConversionHelper.h>
 
 namespace compliant_controller {
      bool CartVelController::init(ros::NodeHandle& nh, std::string root_name, std::string endeffector_name) {
@@ -28,7 +29,7 @@ namespace compliant_controller {
         chain_fk_solver_.reset(new KDL::ChainFkSolverPos_recursive(kdl_chain_));
         q_.reset(new KDL::JntArray(kdl_chain_.getNrOfJoints()));
         std::stringstream debug;
-        debug << "Initialized Cartesian controller with segments (joint): " << std::endl;
+        debug << "Initialized cartesian velocity controller with segments (joint): " << std::endl;
         for (unsigned int i = 0; i < kdl_chain_.getNrOfJoints(); i++) {
             debug << i << ": " << kdl_chain_.getSegment(i).getName() << " (" << kdl_chain_.getSegment(i).getJoint().getName() << ")" << std::endl;
         }
@@ -77,7 +78,7 @@ namespace compliant_controller {
             velocities(i) = joint_vel(i);
             debug << kdl_chain_.getSegment(i).getJoint().getName() << "\t\t" << velocities(i) << std::endl;
         }
-        ROS_INFO_STREAM_THROTTLE(1,debug.str());
+        //ROS_INFO_STREAM_THROTTLE(1,debug.str());
         return true;
     }
 
@@ -99,5 +100,9 @@ namespace compliant_controller {
             cmd_angular_twist_.rot(i) = command.rot(i);
             cmd_angular_twist_.vel(i) = 0.0;
         }
+    }
+
+    void CartVelController::getTipPose(KDL::Frame& pose) {
+        chain_fk_solver_->JntToCart(*q_, pose);
     }
 }
