@@ -11,13 +11,10 @@ namespace compliant_controller {
     }
 
     void AdmittanceController::init(Vector6d& inertia, Vector6d& damping, Vector6d& stiffness) {
-        e_.resize(12);
         Md = inertia;
         Dd = damping;
         Kd = stiffness;
-        for (unsigned int i = 0; i < e_.size(); i++) {
-            e_(i) = 0;
-        }
+        e_ = Eigen::Matrix<double, 12, 1>::Zero();
     }
 
     Vector6d AdmittanceController::getE1() const {
@@ -31,8 +28,8 @@ namespace compliant_controller {
     /**
       Calculates the step function using the last step ek and the current external forces f_ext
       */
-    VectorNd AdmittanceController::f(const Vector6d& f_ext) {
-        VectorNd f_out(12);
+    Eigen::Matrix<double, 12, 1> AdmittanceController::f(const Vector6d& f_ext) {
+        Eigen::Matrix<double, 12, 1> f_out;
         f_out.block<6,1>(0,0) = getE2();
         f_out.block<6,1>(6,0) = Md.asDiagonal().inverse() * (f_ext - Dd.asDiagonal() * getE2() - Kd.asDiagonal() * getE1());
         return f_out;

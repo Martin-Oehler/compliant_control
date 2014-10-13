@@ -10,7 +10,7 @@ namespace compliant_controller {
         void init(Vector6d& inertia, Vector6d& damping, Vector6d& stiffness);
         void calcCompliantPosition(const Vector6d &x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size);
     private:
-        VectorNd f(const Vector6d &f_ext);
+        Eigen::Matrix<double, 12, 1> f(const Vector6d &f_ext);
         /**
           Returns the position part
           */
@@ -22,7 +22,7 @@ namespace compliant_controller {
         /**
           12x1 vector combining position error e (6x1) and velocity error edot (6x1) .
           */
-        VectorNd e_;
+        Eigen::Matrix<double, 12, 1> e_;
         /**
           Admittance parameters
           */

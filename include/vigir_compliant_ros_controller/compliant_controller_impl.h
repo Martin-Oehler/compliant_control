@@ -170,8 +170,6 @@ update(const ros::Time& time, const ros::Duration& period) {
   //Write desired_state and state_error to hardware interface adapter
   hw_iface_adapter_.updateCommand(time_data.uptime, time_data.period,
                                   desired_state_);
-  ROS_INFO_STREAM_THROTTLE(1, "period in s: " << period.toSec());
-
 }
 
 template <class HardwareInterface>

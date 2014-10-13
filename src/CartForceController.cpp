@@ -40,8 +40,13 @@ namespace compliant_controller {
        jnt_to_pose_solver_.reset(new KDL::ChainFkSolverPos_recursive(kdl_chain_));
        jnt_to_jac_solver_.reset(new KDL::ChainJntToJacSolver(kdl_chain_));
 
-       q_.reset(new KDL::JntArray(kdl_chain_.getNrOfJoints()));
-       qdot_.reset(new KDL::JntArray(kdl_chain_.getNrOfJoints()));
+       // resize dynamic objects
+       q_.resize(kdl_chain_.getNrOfJoints());
+       qdot_.resize(kdl_chain_.getNrOfJoints());
+       Jtmp_.resize(kdl_chain_.getNrOfJoints());
+       qtmp_.resize(kdl_chain_.getNrOfJoints());
+       qdottmp_.resize(kdl_chain_.getNrOfJoints());
+
        Kp_ = Kp;
        Kd_ = Kd;
        Ki_ = Ki;
@@ -59,48 +64,28 @@ namespace compliant_controller {
 
     void CartForceController::updateJointState(const VectorNd& q, const VectorNd& qdot) {
         jac_updated_ = false;
-        if (q_->rows() != q.size() || qdot_->rows() != qdot.size()) {
+        if (q_.size() != q.size() || qdot_.size() != qdot.size()) {
             return;
         }
-        for (unsigned int i = 0; i < q_->rows(); i++) {
-            (*q_)(i) = q(i);
-            (*qdot_)(i) = qdot(i);
-        }
-    }
-
-    void CartForceController::updateJointState(const atlas_msgs::AtlasState::ConstPtr &state) {
-        if (kdl_chain_.getNrOfJoints() != 6) {
-            return ;
-        }
-        VectorNd q(6);
-        for (unsigned int i = 0; i < 6; i++) {
-            q(i) = state->position[22+i];
-        }
-        VectorNd qdot(6);
-        for (unsigned int i = 0; i < 6; i++) {
-            qdot(i) = state->velocity[22+i];
-        }
-        updateJointState(q,qdot);
+        q_ = q;
+        qdot_ = qdot;
     }
 
     bool CartForceController::calcCorrectionVector(const Vector6d& xd, const Vector6d& xdotd, Vector6d& force, double step_size) {
         Vector6d x, xdot;
-        VectorNd qdot;
-        KDL::Frame xtmp;
-        KDL::Jacobian Jtmp(kdl_chain_.getNrOfJoints());
-        if (jnt_to_pose_solver_->JntToCart(*q_,xtmp) < 0) {
+        ConversionHelper::eigenToKdl(q_,qtmp_);
+        if (jnt_to_pose_solver_->JntToCart(qtmp_, xtmp_) < 0) {
             ROS_ERROR("Failed to compute forward kinematics.");
             return false;
         }
-        ConversionHelper::kdlToEigen(xtmp, x);
+        ConversionHelper::kdlToEigen(xtmp_, x);
         if (!jac_updated_) {
-            jnt_to_jac_solver_->JntToJac(*q_,Jtmp);
-            ConversionHelper::kdlToEigen(Jtmp, J_);
+            ConversionHelper::eigenToKdl(q_, qtmp_);
+            jnt_to_jac_solver_->JntToJac(qtmp_,Jtmp_);
+            ConversionHelper::kdlToEigen(Jtmp_, J_);
             jac_updated_ = true;
         }
-        ConversionHelper::kdlToEigen(*qdot_, qdot);
-
-        xdot = J_ * qdot;
+        xdot = J_ * qdot_;
 
         // calculate errors
         Vector6d pos_error;
@@ -121,6 +106,7 @@ namespace compliant_controller {
         return force;
     }
 
+    // not real-time safe
     VectorNd CartForceController::calcTorques(const Vector6d& force) {
         VectorNd torques(kdl_chain_.getNrOfJoints());
         calcTorques(force, torques);
@@ -129,14 +115,17 @@ namespace compliant_controller {
 
     bool CartForceController::calcTorques(const Vector6d &force, VectorNd &torques) {
         // initialize output to 0 (in case of error)
-        torques.resize(kdl_chain_.getNrOfJoints());
         for (unsigned int i = 0; i < torques.size(); i++) {
             torques(i) = 0;
         }
-        KDL::Jacobian Jtmp(kdl_chain_.getNrOfJoints());
+        if (torques.size() != kdl_chain_.getNrOfJoints()) {
+            ROS_ERROR_STREAM("Size of torque vector ( + " << torques.size() << ") doesn't match number of joints (" << kdl_chain_.getNrOfJoints() << ").");
+            return false;
+        }
         if (!jac_updated_) {
-            jnt_to_jac_solver_->JntToJac(*q_,Jtmp);
-            ConversionHelper::kdlToEigen(Jtmp, J_);
+            ConversionHelper::eigenToKdl(q_, qtmp_);
+            jnt_to_jac_solver_->JntToJac(qtmp_,Jtmp_);
+            ConversionHelper::kdlToEigen(Jtmp_, J_);
             jac_updated_ = true;
         }
 
@@ -148,7 +137,7 @@ namespace compliant_controller {
 
     void CartForceController::calcCartError(const Vector6d& xd, const Vector6d& x, Vector6d& x_err) const {
         x_err.block<3,1>(0,0) = xd.block<3,1>(0,0) - x.block<3,1>(0,0);
-
+        // TODO NOT REAL-TIME SAFE
         KDL::Rotation xd_rot = KDL::Rotation::RPY(xd(3), xd(4), xd(5));
         KDL::Rotation x_rot = KDL::Rotation::RPY(x(3), x(4), x(5));
         KDL::Vector rot_error_tmp = -0.5 * (xd_rot.UnitX() * x_rot.UnitX() + xd_rot.UnitY() * x_rot.UnitY() + xd_rot.UnitZ() * x_rot.UnitZ());
@@ -158,6 +147,7 @@ namespace compliant_controller {
     }
 
     void CartForceController::getTipPose(KDL::Frame& pose) {
-        jnt_to_pose_solver_->JntToCart(*q_,pose);
+        ConversionHelper::eigenToKdl(q_, qtmp_);
+        jnt_to_pose_solver_->JntToCart(qtmp_,pose);
     }
 }

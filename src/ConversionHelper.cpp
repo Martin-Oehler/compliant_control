@@ -1,5 +1,7 @@
 #include <vigir_compliant_ros_controller/ConversionHelper.h>
 
+#include <ros/ros.h>
+
 namespace compliant_controller {
     void ConversionHelper::kdlToEigen(const KDL::Frame& frame, Vector6d& pose) {
         for (unsigned int i = 0; i < 3; i++) {
@@ -23,7 +25,10 @@ namespace compliant_controller {
     }
 
     void ConversionHelper::kdlToEigen(const KDL::JntArray &jnt_array, VectorNd& vector) {
-        vector.resize(jnt_array.rows());
+        if (vector.size() != jnt_array.rows()) {
+            ROS_ERROR("kdlToEigen: jnt_array.rows() doesn't match vector.size().");
+            return;
+        }
         for (unsigned int i = 0; i < vector.size(); i++) {
             vector(i) = jnt_array(i);
         }
