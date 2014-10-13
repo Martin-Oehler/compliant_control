@@ -79,7 +79,7 @@ namespace compliant_controller
  * \p hardware_interface::VelocityJointInterface, and \p hardware_interface::EffortJointInterface are supported 
  * out-of-the-box.
  */
-template <class SegmentImpl, class HardwareInterface>
+template <class HardwareInterface>
 class CompliantController : public controller_interface::ControllerBase
 {
 public:
@@ -116,9 +116,10 @@ private:
   Vector6d readFTSensor();
   std::string getLeafNamespace(const ros::NodeHandle& nh);
   std::vector<std::string> getStrings(const ros::NodeHandle& nh, const std::string& param_name);
-  double inertia_;
-  double damping_;
-  double stiffness_;
+  bool getVector(const ros::NodeHandle& nh, const std::string& param_name, Vector6d& vector);
+  Vector6d inertia_;
+  Vector6d damping_;
+  Vector6d stiffness_;
   AdmittanceController admittance_controller_;
 
   struct TimeData
@@ -139,10 +140,8 @@ private:
   std::vector<std::string>  joint_names_;        ///< Controlled joint names.
   std::vector<std::string> segment_names_;
 
-  compliant_controller::CartState current_state_;    ///< not used yet, hardware_interface computes the current state itself
   compliant_controller::CartState state_cmd_;        ///< virtual setpoint
   compliant_controller::CartState desired_state_;    ///< compliant pose
-  compliant_controller::CartState state_error_;      ///< not used yset
 
   HwIfaceAdapter            hw_iface_adapter_;   ///< Adapts desired trajectory state to HW interface.
 

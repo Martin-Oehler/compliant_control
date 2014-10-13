@@ -39,8 +39,7 @@ namespace position_controllers
    * \brief Joint trajectory controller that represents trajectory segments as <b>quintic splines</b> and sends
    * commands to a \b position interface.
    */
-  typedef compliant_controller::CompliantController<trajectory_interface::QuinticSplineSegment<double>,
-                                                                 hardware_interface::PositionJointInterface>
+  typedef compliant_controller::CompliantController<hardware_interface::PositionJointInterface>
           CompliantController;
 }
 
@@ -50,8 +49,7 @@ namespace velocity_controllers
    * \brief Joint trajectory controller that represents trajectory segments as <b>quintic splines</b> and sends
    * commands to a \b velocity interface.
    */
-  typedef compliant_controller::CompliantController<trajectory_interface::QuinticSplineSegment<double>,
-                                                                 hardware_interface::VelocityJointInterface>
+  typedef compliant_controller::CompliantController<hardware_interface::VelocityJointInterface>
           CompliantController;
 }
 
@@ -61,8 +59,7 @@ namespace effort_controllers
    * \brief Joint trajectory controller that represents trajectory segments as <b>quintic splines</b> and sends
    * commands to an \b effort interface.
    */
-  typedef compliant_controller::CompliantController<trajectory_interface::QuinticSplineSegment<double>,
-                                                                 hardware_interface::EffortJointInterface>
+  typedef compliant_controller::CompliantController<hardware_interface::EffortJointInterface>
           CompliantController;
 }
 

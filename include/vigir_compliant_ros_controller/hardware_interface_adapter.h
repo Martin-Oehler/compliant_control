@@ -27,8 +27,7 @@ public:
 
   void updateCommand(const ros::Time&     time,
                      const ros::Duration& period,
-                     const State&         desired_state,
-                     const State&         state_error) {}
+                     const State&         desired_state) {}
   compliant_controller::Matrix3d getTipTransform() {return compliant_controller::Matrix3d::Identity();}
 };
 
@@ -55,8 +54,7 @@ public:
 
     void updateCommand(const ros::Time&     time,
                        const ros::Duration& period,
-                       const compliant_controller::CartState&         desired_state,
-                       const compliant_controller::CartState&         state_error) {
+                       const compliant_controller::CartState&         desired_state) {
         updateJointState();
         // calculate correction vector in cartesian space
         compliant_controller::Vector6d twist;
@@ -121,8 +119,7 @@ public:
 
      void updateCommand(const ros::Time&     time,
                      const ros::Duration& period,
-                     const compliant_controller::CartState&         desired_state,
-                     const compliant_controller::CartState&         state_error) {
+                     const compliant_controller::CartState&         desired_state) {
          // calculate correction force in cartesian space
          compliant_controller::Vector6d force;
          cart_force_controller_.calcCorrectionVector(desired_state.position, desired_state.velocity, force);

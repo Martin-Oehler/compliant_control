@@ -32,16 +32,18 @@
 
 #include <kdl/frames.hpp>
 
+#include <boost/algorithm/string.hpp>
+
 namespace compliant_controller {
 
-template <class SegmentImpl, class HardwareInterface>
-CompliantController<SegmentImpl, HardwareInterface>::
+template <class HardwareInterface>
+CompliantController<HardwareInterface>::
 CompliantController()
   : verbose_(false) // Set to true during debugging
 {}
 
-template <class SegmentImpl, class HardwareInterface>
-inline void CompliantController<SegmentImpl, HardwareInterface>::
+template <class HardwareInterface>
+inline void CompliantController<HardwareInterface>::
 starting(const ros::Time& time) {
     ROS_INFO_STREAM("Starting controller: " << name_);
   // Update time data
@@ -54,10 +56,6 @@ starting(const ros::Time& time) {
   state_cmd_.velocity = Vector6d::Zero();
   desired_state_.position = Vector6d::Zero();
   desired_state_.velocity = Vector6d::Zero();
-  current_state_.position = Vector6d::Zero();
-  current_state_.velocity = Vector6d::Zero();
-  state_error_.position = Vector6d::Zero();
-  state_error_.velocity = Vector6d::Zero();
 
   // for testing
   state_cmd_.position(0) = 0.0130977;
@@ -74,15 +72,15 @@ starting(const ros::Time& time) {
   hw_iface_adapter_.starting(time_data.uptime);
 }
 
-template <class SegmentImpl, class HardwareInterface>
-inline void CompliantController<SegmentImpl, HardwareInterface>::
+template <class HardwareInterface>
+inline void CompliantController<HardwareInterface>::
 stopping(const ros::Time& time) {
     ROS_INFO_STREAM("Stopping controller: " << name_);
     hw_iface_adapter_.stopping(time);
 }
 
-template <class SegmentImpl, class HardwareInterface>
-bool CompliantController<SegmentImpl, HardwareInterface>::
+template <class HardwareInterface>
+bool CompliantController<HardwareInterface>::
 init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh) {
 
   // Cache controller node handle
@@ -93,11 +91,21 @@ init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controlle
   ROS_INFO_STREAM("Initializing controller " << name_);
 
   // admittance parameters
-  // TODO read from parameter server
-  double update_step = 0.001;
-  inertia_ = 150;
-  damping_ = 250;
-  stiffness_ = 400;
+  if (!getVector(controller_nh_, "inertia", inertia_)) {
+      for (unsigned int i = 0; i < 6; i++) {
+          inertia_(i) = 150;
+      }
+  }
+  if (!getVector(controller_nh_, "damping", damping_)) {
+      for (unsigned int i = 0; i < 6; i++) {
+          damping_(i) = 250;
+      }
+  }
+  if (!getVector(controller_nh_, "stiffness", stiffness_)) {
+      for (unsigned int i = 0; i < 6; i++) {
+          stiffness_(i) = 400;
+      }
+  }
 
   // controlled segments
   segment_names_ = getStrings(controller_nh_, "segments");
@@ -136,17 +144,22 @@ init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controlle
   }
 
   // admittance controller
-  admittance_controller_.init(inertia_, damping_, stiffness_, update_step);
+  // TODO remove update step. use ros::duration period
+  admittance_controller_.init(inertia_, damping_, stiffness_, 0.001);
 
   // ROS API subscribed topics
-  // TODO add topic name to config
-  pose_sub_ = root_nh.subscribe("/r_arm_pose", 1, &CompliantController::poseCmdUpdate, this);
+  std::string cmd_topic_name;
+  if (!controller_nh_.getParam("cmd_topic_name", cmd_topic_name)) {
+      ROS_ERROR_STREAM("Parameter cmd_topic_name not set. Using default '/pose'");
+      cmd_topic_name = "/pose";
+  }
+  pose_sub_ = root_nh.subscribe(cmd_topic_name, 1, &CompliantController::poseCmdUpdate, this);
 
   return true;
 }
 
-template <class SegmentImpl, class HardwareInterface>
-void CompliantController<SegmentImpl, HardwareInterface>::
+template <class HardwareInterface>
+void CompliantController<HardwareInterface>::
 update(const ros::Time& time, const ros::Duration& period) {
   // Update time data
   TimeData time_data;
@@ -155,22 +168,19 @@ update(const ros::Time& time, const ros::Duration& period) {
   time_data.uptime = time_data_.readFromRT()->uptime + period; // Update controller uptime
   time_data_.writeFromNonRT(time_data); // TODO: Grrr, we need a lock-free data structure here!
 
-  // TODO read state cmd from interactive marker topic
   admittance_controller_.calcCompliantPosition(state_cmd_.position, readFTSensor(), desired_state_.position, desired_state_.velocity);
- // ROS_INFO_STREAM_THROTTLE(0.5, "Desired position: " << std::endl << desired_state_.position);
-
 
   //Write desired_state and state_error to hardware interface adapter
   hw_iface_adapter_.updateCommand(time_data.uptime, time_data.period,
-                                  desired_state_, state_error_);
+                                  desired_state_);
 
   // Publish state
   //publishState(time_data.uptime);
 
 }
 
-template <class SegmentImpl, class HardwareInterface>
-Vector6d CompliantController<SegmentImpl, HardwareInterface>::
+template <class HardwareInterface>
+Vector6d CompliantController<HardwareInterface>::
 readFTSensor() {
     const double* force = force_torque_sensor_handle_.getForce();
     const double* torque = force_torque_sensor_handle_.getTorque();
@@ -185,15 +195,15 @@ readFTSensor() {
     return force_torque;
 }
 
-template <class SegmentImpl, class HardwareInterface>
-std::string CompliantController<SegmentImpl, HardwareInterface>::
+template <class HardwareInterface>
+std::string CompliantController<HardwareInterface>::
 getHardwareInterfaceType() const
 {
   return "This_controller_derives_from_ControllerBase_so_cannot_return_a_proper_single_interface_type";
 }
 
-template <class SegmentImpl, class HardwareInterface>
-bool CompliantController<SegmentImpl, HardwareInterface>::
+template <class HardwareInterface>
+bool CompliantController<HardwareInterface>::
 initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros::NodeHandle &controller_nh,
                          std::set<std::string>& claimed_resources)
 {
@@ -214,14 +224,6 @@ initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros
 
 
   //We have access to the full hw interface here and thus can grab multiple components of it
-
-  //Get pointer to joint state interface
-  // I don't think we actually need this, since we get the joint handles via the command interface.
-  //hardware_interface::JointStateInterface* joint_state_interface = robot_hw->get<hardware_interface::JointStateInterface>();
-//  if (!joint_state_interface){
-//    ROS_ERROR("Unable to retrieve JointStateInterface for compliant controller!");
-//    return false;
-//  }
 
   // get pointer to force torque sensor interface
   hardware_interface::ForceTorqueSensorInterface * force_torque_sensor_interface = robot_hw->get<hardware_interface::ForceTorqueSensorInterface >();
@@ -255,8 +257,8 @@ initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros
   return true;
 }
 
-template <class SegmentImpl, class HardwareInterface>
-void CompliantController<SegmentImpl, HardwareInterface>::
+template <class HardwareInterface>
+void CompliantController<HardwareInterface>::
 poseCmdUpdate(const geometry_msgs::PoseStampedConstPtr& pose_ptr) {
     KDL::Frame kdl_pose;
     kdl_pose.p = KDL::Vector(pose_ptr->pose.position.x, pose_ptr->pose.position.y, pose_ptr->pose.position.z);
@@ -264,16 +266,16 @@ poseCmdUpdate(const geometry_msgs::PoseStampedConstPtr& pose_ptr) {
     ConversionHelper::kdlToEigen(kdl_pose, state_cmd_.position);
 }
 
-template <class SegmentImpl, class HardwareInterface>
-std::string CompliantController<SegmentImpl, HardwareInterface>::
+template <class HardwareInterface>
+std::string CompliantController<HardwareInterface>::
 getLeafNamespace(const ros::NodeHandle& nh) {
   const std::string complete_ns = nh.getNamespace();
   std::size_t id   = complete_ns.find_last_of("/");
   return complete_ns.substr(id + 1);
 }
 
-template <class SegmentImpl, class HardwareInterface>
-std::vector<std::string> CompliantController<SegmentImpl, HardwareInterface>::
+template <class HardwareInterface>
+std::vector<std::string> CompliantController<HardwareInterface>::
 getStrings(const ros::NodeHandle& nh, const std::string& param_name) {
   using namespace XmlRpc;
   XmlRpcValue xml_array;
@@ -301,6 +303,30 @@ getStrings(const ros::NodeHandle& nh, const std::string& param_name) {
     out.push_back(static_cast<std::string>(xml_array[i]));
   }
   return out;
+}
+template <class HardwareInterface>
+bool CompliantController<HardwareInterface>::
+getVector(const ros::NodeHandle& nh, const std::string& param_name, Vector6d& vector) {
+    std::string vector_string;
+    if (!nh.getParam(param_name, vector_string)) {
+        ROS_ERROR_STREAM("Could not find '" << param_name << "' parameter (namespace: " << nh.getNamespace() << ").");
+        return false;
+    }
+    std::vector<std::string> vector_splitted;
+    boost::split(vector_splitted, vector_string, boost::is_any_of(","));
+    if (vector_splitted.size() != 6) {
+        ROS_ERROR_STREAM("Parameter " << param_name << "(namespace: " << nh.getNamespace() << ") "<< " does not have a size of 6.");
+        return false;
+    }
+    for (unsigned int i = 0; i < vector_splitted.size(); i++) {
+        try {
+            vector(i) = boost::lexical_cast<double>(vector_splitted[i]);
+        } catch(boost::bad_lexical_cast& e) {
+            ROS_ERROR_STREAM(vector_splitted[i] << " is no valid double value. Setting entry to 0.");
+            vector(i) = 0;
+        }
+    }
+    return true;
 }
 
 
