@@ -1,18 +1,17 @@
 #include <vigir_compliant_ros_controller/AdmittanceController.h>
 
 namespace compliant_controller {
-    void AdmittanceController::init(double inertia, double damping, double stiffness, double step_size) {
+    void AdmittanceController::init(double inertia, double damping, double stiffness) {
         for (unsigned int i = 0; i < Md.size(); i++) {
             Md(i) = inertia;
             Dd(i) = damping;
             Kd(i) = stiffness;
         }
-        init(Md, Dd, Kd, step_size);
+        init(Md, Dd, Kd);
     }
 
-    void AdmittanceController::init(Vector6d& inertia, Vector6d& damping, Vector6d& stiffness, double step_size) {
+    void AdmittanceController::init(Vector6d& inertia, Vector6d& damping, Vector6d& stiffness) {
         e_.resize(12);
-        step_size_ = step_size;
         Md = inertia;
         Dd = damping;
         Kd = stiffness;
@@ -39,8 +38,8 @@ namespace compliant_controller {
         return f_out;
     }
 
-    void AdmittanceController::calcCompliantPosition(const Vector6d &x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd) {
-        e_ = e_ + step_size_ * f(f_ext);                // e_(k+1) = e_k + h*f(e_k, f_ext)
+    void AdmittanceController::calcCompliantPosition(const Vector6d &x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size) {
+        e_ = e_ + step_size * f(f_ext);                // e_(k+1) = e_k + h*f(e_k, f_ext)
         xd = x0 + getE1();                        // add the calculated position offset to our virtual set point
         xdotd = getE2();
     }

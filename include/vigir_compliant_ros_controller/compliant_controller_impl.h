@@ -65,9 +65,6 @@ starting(const ros::Time& time) {
   state_cmd_.position(4) = 0.193883;
   state_cmd_.position(5) = 1.78593;
 
-  // Initialize last state update time
-  //last_state_publish_time_ = time_data.uptime;
-
   // Hardware interface adapter
   hw_iface_adapter_.starting(time_data.uptime);
 }
@@ -76,7 +73,7 @@ template <class HardwareInterface>
 inline void CompliantController<HardwareInterface>::
 stopping(const ros::Time& time) {
     ROS_INFO_STREAM("Stopping controller: " << name_);
-    hw_iface_adapter_.stopping(time);
+    hw_iface_adapter_.stopping(time_data_.readFromNonRT()->uptime);
 }
 
 template <class HardwareInterface>
@@ -145,7 +142,7 @@ init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controlle
 
   // admittance controller
   // TODO remove update step. use ros::duration period
-  admittance_controller_.init(inertia_, damping_, stiffness_, 0.001);
+  admittance_controller_.init(inertia_, damping_, stiffness_);
 
   // ROS API subscribed topics
   std::string cmd_topic_name;
@@ -168,14 +165,12 @@ update(const ros::Time& time, const ros::Duration& period) {
   time_data.uptime = time_data_.readFromRT()->uptime + period; // Update controller uptime
   time_data_.writeFromNonRT(time_data); // TODO: Grrr, we need a lock-free data structure here!
 
-  admittance_controller_.calcCompliantPosition(state_cmd_.position, readFTSensor(), desired_state_.position, desired_state_.velocity);
+  admittance_controller_.calcCompliantPosition(state_cmd_.position, readFTSensor(), desired_state_.position, desired_state_.velocity, period.toSec());
 
   //Write desired_state and state_error to hardware interface adapter
   hw_iface_adapter_.updateCommand(time_data.uptime, time_data.period,
                                   desired_state_);
-
-  // Publish state
-  //publishState(time_data.uptime);
+  ROS_INFO_STREAM_THROTTLE(1, "period in s: " << period.toSec());
 
 }
 

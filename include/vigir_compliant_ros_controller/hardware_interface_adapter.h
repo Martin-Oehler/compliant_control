@@ -36,7 +36,7 @@ class HardwareInterfaceAdapter<hardware_interface::VelocityJointInterface, compl
 public:
     bool init(std::vector<std::string> segment_names, std::vector<hardware_interface::JointHandle>& joint_handles, ros::NodeHandle& controller_nh) {
         joint_handles_ptr_ = &joint_handles;
-        if (!cart_force_controller_.init(controller_nh, segment_names[0], segment_names[segment_names.size()-1], 10, 0, 0, 0.001)) {
+        if (!cart_force_controller_.init(controller_nh, segment_names[0], segment_names[segment_names.size()-1], 10, 0, 0)) {
             return false;
         }
         if (!cart_vel_controller_.init(controller_nh, segment_names[0], segment_names[segment_names.size()-1])) {
@@ -59,7 +59,7 @@ public:
         // calculate correction vector in cartesian space
         compliant_controller::Vector6d twist;
         KDL::Twist twist_kdl;
-        cart_force_controller_.calcCorrectionVector(desired_state.position, desired_state.velocity, twist);
+        cart_force_controller_.calcCorrectionVector(desired_state.position, desired_state.velocity, twist, period.toSec());
         compliant_controller::ConversionHelper::eigenToKdl(twist, twist_kdl);
 
         // transform cartesian vector to joint velocities
@@ -104,7 +104,7 @@ class HardwareInterfaceAdapter<hardware_interface::EffortJointInterface, complia
 public:
      bool init(std::vector<std::string> segment_names, std::vector<hardware_interface::JointHandle>& joint_handles, ros::NodeHandle& controller_nh) {
         joint_handles_ptr_ = &joint_handles;
-        if (!cart_force_controller_.init(controller_nh, segment_names[0], segment_names[segment_names.size()-1], 10, 0, 0, 0.001)) {
+        if (!cart_force_controller_.init(controller_nh, segment_names[0], segment_names[segment_names.size()-1], 10, 0, 0)) {
             return false;
         }
         return true;
@@ -122,7 +122,7 @@ public:
                      const compliant_controller::CartState&         desired_state) {
          // calculate correction force in cartesian space
          compliant_controller::Vector6d force;
-         cart_force_controller_.calcCorrectionVector(desired_state.position, desired_state.velocity, force);
+         cart_force_controller_.calcCorrectionVector(desired_state.position, desired_state.velocity, force, period.toSec());
 
          // map force to joint efforts
          compliant_controller::VectorNd torques(joint_handles_ptr_->size());

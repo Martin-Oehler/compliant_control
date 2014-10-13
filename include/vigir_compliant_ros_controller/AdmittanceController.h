@@ -6,9 +6,9 @@
 namespace compliant_controller {
     class AdmittanceController {
     public:
-        void init(double inertia, double damping, double stiffness, double step_size);
-        void init(Vector6d& inertia, Vector6d& damping, Vector6d& stiffness, double step_size);
-        void calcCompliantPosition(const Vector6d &x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd);
+        void init(double inertia, double damping, double stiffness);
+        void init(Vector6d& inertia, Vector6d& damping, Vector6d& stiffness);
+        void calcCompliantPosition(const Vector6d &x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size);
     private:
         VectorNd f(const Vector6d &f_ext);
         /**
@@ -29,7 +29,6 @@ namespace compliant_controller {
         Vector6d Md;
         Vector6d Dd;
         Vector6d Kd;
-        double step_size_;
     };
 }
 

@@ -4,7 +4,7 @@
 #include <vigir_compliant_ros_controller/ConversionHelper.h>
 
 namespace compliant_controller {
-    bool CartForceController::init(const ros::NodeHandle& node, const std::string& root_name, const std::string& tip_name, double kp, double kd, double ki, double step_size) {
+    bool CartForceController::init(const ros::NodeHandle& node, const std::string& root_name, const std::string& tip_name, double kp, double kd, double ki) {
         Vector6d kp_vector;
         Vector6d kd_vector;
         Vector6d ki_vector;
@@ -13,10 +13,10 @@ namespace compliant_controller {
             kd_vector(i) = kd;
             ki_vector(i) = ki;
         }
-        return init(node, root_name, tip_name, kp_vector.asDiagonal(), kd_vector.asDiagonal(), ki_vector.asDiagonal(), step_size);
+        return init(node, root_name, tip_name, kp_vector.asDiagonal(), kd_vector.asDiagonal(), ki_vector.asDiagonal());
     }
 
-    bool CartForceController::init(const ros::NodeHandle &node, const std::string &root_name, const std::string &tip_name, const Matrix6d &Kp, const Matrix6d &Kd, const Matrix6d &Ki, double step_size) {
+    bool CartForceController::init(const ros::NodeHandle &node, const std::string &root_name, const std::string &tip_name, const Matrix6d &Kp, const Matrix6d &Kd, const Matrix6d &Ki) {
         std::string robot_description;
 
         if (!node.getParam("/robot_description", robot_description)) {
@@ -46,7 +46,6 @@ namespace compliant_controller {
        Kd_ = Kd;
        Ki_ = Ki;
        integral_ = Vector6d::Zero();
-       step_size_ = step_size;
 
        std::stringstream debug;
        debug << "Initialized Cartesian controller with segments (joint): " << std::endl;
@@ -84,7 +83,7 @@ namespace compliant_controller {
         updateJointState(q,qdot);
     }
 
-    bool CartForceController::calcCorrectionVector(const Vector6d& xd, const Vector6d& xdotd, Vector6d& force) {
+    bool CartForceController::calcCorrectionVector(const Vector6d& xd, const Vector6d& xdotd, Vector6d& force, double step_size) {
         Vector6d x, xdot;
         VectorNd qdot;
         KDL::Frame xtmp;
@@ -110,15 +109,15 @@ namespace compliant_controller {
         calcCartError(xdotd, xdot, vel_error);
 
         // calculate integral
-        integral_ = integral_ + step_size_*Ki_*pos_error;
+        integral_ = integral_ + step_size*Ki_*pos_error;
         force = Kp_*pos_error + Kd_*vel_error + integral_;
 
         return true;
     }
 
-    Vector6d CartForceController::calcCorrectionVector(const Vector6d& xd, const Vector6d& xdotd) {
+    Vector6d CartForceController::calcCorrectionVector(const Vector6d& xd, const Vector6d& xdotd, double step_size) {
         Vector6d force;
-        calcCorrectionVector(xd, xdotd, force);
+        calcCorrectionVector(xd, xdotd, force, step_size);
         return force;
     }
 

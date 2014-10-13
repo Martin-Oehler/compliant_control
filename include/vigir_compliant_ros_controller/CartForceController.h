@@ -18,12 +18,12 @@ namespace compliant_controller {
     class CartForceController {
     public:
         CartForceController() : initialized_(false), jac_updated_(false) {}
-        bool init(const ros::NodeHandle& node, const std::string& root_name, const std::string& tip_name, const Matrix6d& Kp, const Matrix6d& Kd, const Matrix6d& Ki, double step_size);
-        bool init(const ros::NodeHandle& node, const std::string& root_name, const std::string& tip_name, double kp, double kd, double ki, double step_size);
+        bool init(const ros::NodeHandle& node, const std::string& root_name, const std::string& tip_name, const Matrix6d& Kp, const Matrix6d& Kd, const Matrix6d& Ki);
+        bool init(const ros::NodeHandle& node, const std::string& root_name, const std::string& tip_name, double kp, double kd, double ki);
         void updateJointState(const VectorNd& q, const VectorNd& qdot);
         void updateJointState(const atlas_msgs::AtlasState::ConstPtr &state);
-        bool calcCorrectionVector(const Vector6d& xd, const Vector6d& xdotd, Vector6d& force);
-        Vector6d calcCorrectionVector(const Vector6d& xd, const Vector6d& xdotd);
+        bool calcCorrectionVector(const Vector6d& xd, const Vector6d& xdotd, Vector6d& force, double step_size);
+        Vector6d calcCorrectionVector(const Vector6d& xd, const Vector6d& xdotd, double step_size);
         bool calcTorques(const Vector6d& force, VectorNd& torques);
         VectorNd calcTorques(const Vector6d& force);
         // for testing
@@ -52,7 +52,6 @@ namespace compliant_controller {
         Matrix6d Ki_;
 
         Vector6d integral_;
-        double step_size_;
     };
 }
 
