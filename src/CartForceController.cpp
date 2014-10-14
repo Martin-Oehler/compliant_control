@@ -65,6 +65,7 @@ namespace compliant_controller {
     void CartForceController::updateJointState(const VectorNd& q, const VectorNd& qdot) {
         jac_updated_ = false;
         if (q_.size() != q.size() || qdot_.size() != qdot.size()) {
+            ROS_ERROR_STREAM("updateJointState: One of the given vectors q(" << q.size() << "), qdot(" << qdot.size() << ") doesn't match joint number (" << kdl_chain_.getNrOfJoints() << ").");
             return;
         }
         q_ = q;
@@ -135,15 +136,24 @@ namespace compliant_controller {
         return true;
     }
 
+    Matrix3d CartForceController::rotFromRPY(double roll, double pitch, double yaw) const {
+        Matrix3d rot;
+        double ca1,cb1,cc1,sa1,sb1,sc1;
+        ca1 = cos(yaw); sa1 = sin(yaw);
+        cb1 = cos(pitch);sb1 = sin(pitch);
+        cc1 = cos(roll);sc1 = sin(roll);
+        rot << ca1*cb1, ca1*sb1*sc1 - sa1*cc1, ca1*sb1*cc1 + sa1*sc1,
+               sa1*cb1, sa1*sb1*sc1 + ca1*cc1, sa1*sb1*cc1 - ca1*sc1,
+               -sb1,    cb1*sc1,               cb1*cc1;
+        return rot;
+    }
+
     void CartForceController::calcCartError(const Vector6d& xd, const Vector6d& x, Vector6d& x_err) const {
         x_err.block<3,1>(0,0) = xd.block<3,1>(0,0) - x.block<3,1>(0,0);
-        // TODO NOT REAL-TIME SAFE
-        KDL::Rotation xd_rot = KDL::Rotation::RPY(xd(3), xd(4), xd(5));
-        KDL::Rotation x_rot = KDL::Rotation::RPY(x(3), x(4), x(5));
-        KDL::Vector rot_error_tmp = -0.5 * (xd_rot.UnitX() * x_rot.UnitX() + xd_rot.UnitY() * x_rot.UnitY() + xd_rot.UnitZ() * x_rot.UnitZ());
-        Vector3d rot_error;
-        ConversionHelper::kdlToEigen(rot_error_tmp, rot_error);
-        x_err.block<3,1>(3,0) = rot_error;
+
+        Matrix3d xd_rot = rotFromRPY(xd(3), xd(4), xd(5));
+        Matrix3d x_rot = rotFromRPY(x(3), x(4), x(5));
+        x_err.block<3,1>(3,0) = -0.5 * (xd_rot.col(0).cross(x_rot.col(0)) + xd_rot.col(1).cross(x_rot.col(1)) + xd_rot.col(2).cross(x_rot.col(2)));
     }
 
     void CartForceController::getTipPose(KDL::Frame& pose) {

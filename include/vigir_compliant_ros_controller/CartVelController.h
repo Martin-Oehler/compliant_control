@@ -23,11 +23,11 @@ namespace compliant_controller {
     public:
         CartVelController() : initialized_(false) {}
         bool init(ros::NodeHandle& nh, std::string root_name, std::string endeffector_name);
-        bool update(const KDL::Twist &command, VectorNd& velocities);
+        bool update(const Vector6d &command, VectorNd& velocities);
         void updatePosition(const VectorNd& position);
         void getTipPose(KDL::Frame& pose);
     private:
-        void setCommand(const KDL::Twist& command);
+        void setCommand(const Vector6d& command);
         bool initialized_;
 
         std::string root_name_;
@@ -39,10 +39,12 @@ namespace compliant_controller {
         boost::scoped_ptr<KDL::ChainIkSolverVel> chain_ik_solver_vel_;
         boost::scoped_ptr<KDL::ChainFkSolverPos> chain_fk_solver_;
 
-        KDL::Twist cmd_linear_twist_;
-        KDL::Twist cmd_angular_twist_;
-
-        boost::scoped_ptr<KDL::JntArray> q_;
+        Vector6d cmd_twist_;
+        VectorNd q_;
+        // pre-allocated variables
+        KDL::Twist twist_tmp_;
+        KDL::JntArray joint_vel_tmp_;
+        KDL::JntArray qtmp_;
     };
 
 }

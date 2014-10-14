@@ -29,6 +29,7 @@ namespace compliant_controller {
         void getTipPose(KDL::Frame& pose);
     private:
         void calcCartError(const Vector6d& xd, const Vector6d& x, Vector6d& x_err) const;
+        Matrix3d rotFromRPY(double roll, double pitch, double yaw) const;
         bool initialized_;
 
         std::string root_name_;

@@ -36,6 +36,12 @@ class HardwareInterfaceAdapter<hardware_interface::VelocityJointInterface, compl
 public:
     bool init(std::vector<std::string> segment_names, std::vector<hardware_interface::JointHandle>& joint_handles, ros::NodeHandle& controller_nh) {
         joint_handles_ptr_ = &joint_handles;
+        // resize pre-allocated variables
+        velocities_.resize(joint_handles_ptr_->size());
+        joint_velocities_.resize(joint_handles_ptr_->size());
+        joint_positions_.resize(joint_handles_ptr_->size());
+
+        // init controllers
         if (!cart_force_controller_.init(controller_nh, segment_names[0], segment_names[segment_names.size()-1], 10, 0, 0)) {
             return false;
         }
@@ -52,26 +58,23 @@ public:
         }
     }
 
-    void updateCommand(const ros::Time&     time,
-                       const ros::Duration& period,
-                       const compliant_controller::CartState&         desired_state) {
+    void updateCommand(const ros::Time& time, const ros::Duration& period, const compliant_controller::CartState& desired_state) {
         updateJointState();
         // calculate correction vector in cartesian space
         compliant_controller::Vector6d twist;
-        KDL::Twist twist_kdl;
         cart_force_controller_.calcCorrectionVector(desired_state.position, desired_state.velocity, twist, period.toSec());
-        compliant_controller::ConversionHelper::eigenToKdl(twist, twist_kdl);
-
+        //ROS_INFO_STREAM("calculated twist: " << std::endl << twist);
         // transform cartesian vector to joint velocities
-        compliant_controller::VectorNd velocities(joint_handles_ptr_->size());
-        cart_vel_controller_.update(twist_kdl, velocities);
+        cart_vel_controller_.update(twist, velocities_);
 
         // assign joint velocity command
         for (unsigned int i = 0; i < joint_handles_ptr_->size(); i++) {
-            (*joint_handles_ptr_)[i].setCommand(velocities(i));
+            (*joint_handles_ptr_)[i].setCommand(velocities_(i));
         }
+        //ROS_INFO_STREAM("joint velocity cmds: " << std::endl << velocities_);
     }
 
+    // not realtime safe
     compliant_controller::Matrix3d getTipTransform() {
         updateJointState();
         KDL::Frame pose;
@@ -84,19 +87,22 @@ public:
 private:
     void updateJointState() {
         // update joint state
-        compliant_controller::VectorNd joint_positions(joint_handles_ptr_->size());
-        compliant_controller::VectorNd joint_velocities(joint_handles_ptr_->size());
-        for (unsigned int i = 0; i < joint_positions.size(); i++) {
-            joint_positions(i) = (*joint_handles_ptr_)[i].getPosition();
-            joint_velocities(i) = (*joint_handles_ptr_)[i].getVelocity();
+        for (unsigned int i = 0; i < joint_positions_.size(); i++) {
+            joint_positions_(i) = (*joint_handles_ptr_)[i].getPosition();
+            joint_velocities_(i) = (*joint_handles_ptr_)[i].getVelocity();
         }
-        cart_force_controller_.updateJointState(joint_positions, joint_velocities);
-        cart_vel_controller_.updatePosition(joint_positions);
+        cart_force_controller_.updateJointState(joint_positions_, joint_velocities_);
+        cart_vel_controller_.updatePosition(joint_positions_);
     }
 
     std::vector<hardware_interface::JointHandle>* joint_handles_ptr_;
     compliant_controller::CartForceController cart_force_controller_;
     compliant_controller::CartVelController cart_vel_controller_;
+
+    //pre-allocated variables
+    compliant_controller::VectorNd velocities_;
+    compliant_controller::VectorNd joint_positions_;
+    compliant_controller::VectorNd joint_velocities_;
 };
 
 template <>
@@ -104,6 +110,11 @@ class HardwareInterfaceAdapter<hardware_interface::EffortJointInterface, complia
 public:
      bool init(std::vector<std::string> segment_names, std::vector<hardware_interface::JointHandle>& joint_handles, ros::NodeHandle& controller_nh) {
         joint_handles_ptr_ = &joint_handles;
+        // resize pre-allocated variables
+        torques_.resize(joint_handles_ptr_->size());
+        joint_velocities_.resize(joint_handles_ptr_->size());
+        joint_positions_.resize(joint_handles_ptr_->size());
+        // init controller
         if (!cart_force_controller_.init(controller_nh, segment_names[0], segment_names[segment_names.size()-1], 10, 0, 0)) {
             return false;
         }
@@ -117,20 +128,17 @@ public:
          }
      }
 
-     void updateCommand(const ros::Time&     time,
-                     const ros::Duration& period,
-                     const compliant_controller::CartState&         desired_state) {
+     void updateCommand(const ros::Time& time, const ros::Duration& period, const compliant_controller::CartState& desired_state) {
          // calculate correction force in cartesian space
          compliant_controller::Vector6d force;
          cart_force_controller_.calcCorrectionVector(desired_state.position, desired_state.velocity, force, period.toSec());
 
          // map force to joint efforts
-         compliant_controller::VectorNd torques(joint_handles_ptr_->size());
-         cart_force_controller_.calcTorques(force, torques);
+         cart_force_controller_.calcTorques(force, torques_);
 
          // assign effort cmd
          for (unsigned int i = 0; i < joint_handles_ptr_->size(); i++) {
-             (*joint_handles_ptr_)[i].setCommand(torques(i));
+             (*joint_handles_ptr_)[i].setCommand(torques_(i));
          }
 
      }
@@ -146,17 +154,20 @@ public:
 private:
      void updateJointState() {
          // update joint state
-         compliant_controller::VectorNd joint_positions(joint_handles_ptr_->size());
-         compliant_controller::VectorNd joint_velocities(joint_handles_ptr_->size());
-         for (unsigned int i = 0; i < joint_positions.size(); i++) {
-             joint_positions(i) = (*joint_handles_ptr_)[i].getPosition();
-             joint_velocities(i) = (*joint_handles_ptr_)[i].getVelocity();
+         for (unsigned int i = 0; i < joint_positions_.size(); i++) {
+             joint_positions_(i) = (*joint_handles_ptr_)[i].getPosition();
+             joint_velocities_(i) = (*joint_handles_ptr_)[i].getVelocity();
          }
-         cart_force_controller_.updateJointState(joint_positions, joint_velocities);
+         cart_force_controller_.updateJointState(joint_positions_, joint_velocities_);
      }
 
     std::vector<hardware_interface::JointHandle>* joint_handles_ptr_;
     compliant_controller::CartForceController cart_force_controller_;
+
+    //pre-allocated variables
+    compliant_controller::VectorNd torques_;
+    compliant_controller::VectorNd joint_positions_;
+    compliant_controller::VectorNd joint_velocities_;
 };
 
 
