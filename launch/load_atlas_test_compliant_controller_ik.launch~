@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+  
+    <!--Provide option to set namespace from outside-->
+    <arg name="namespace" default="joint_controllers"/>
+
+
+    <rosparam file="$(find vigir_compliant_ros_controller)/config/atlas_rhand_ik.yaml" command="load" ns="$(arg namespace)"/>
+    <!--<rosparam command="load" file="$(find flor_atlas_moveit_config)/config/kinematics.yaml" />-->
+
+    <node name="compliant_controller_spawner" pkg="controller_manager" type="spawner" ns="$(arg namespace)" respawn="false" output="screen" args="right_arm_compliant_controller" />
+    
+</launch> 

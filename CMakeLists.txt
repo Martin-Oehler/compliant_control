@@ -13,6 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
   realtime_tools
   urdf
   kdl_parser
+  moveit_core
+  moveit_ros_planning
 )
 
 ## System dependencies are found with CMake's conventions
@@ -82,6 +84,7 @@ set(HEADERS
     include/${PROJECT_NAME}/AdmittanceController.h
     include/${PROJECT_NAME}/CartForceController.h
     include/${PROJECT_NAME}/CartVelController.h
+    include/${PROJECT_NAME}/InvKinController.h
     include/${PROJECT_NAME}/ConversionHelper.h
     include/${PROJECT_NAME}/JointAdmittanceController.h
     include/${PROJECT_NAME}/CustomTypes.h
@@ -93,6 +96,7 @@ set(SOURCES
     src/AdmittanceController.cpp
     src/CartForceController.cpp
     src/CartVelController.cpp
+    src/InvKinController.cpp
     src/ConversionHelper.cpp
     src/JointAdmittanceController.cpp
 )
@@ -109,7 +113,16 @@ set(SOURCES
 catkin_package(
 INCLUDE_DIRS include
 LIBRARIES vigir_compliant_ros_controller
-CATKIN_DEPENDS control_toolbox controller_interface controller_manager hardware_interface joint_trajectory_controller realtime_tools urdf
+CATKIN_DEPENDS
+ control_toolbox
+ controller_interface
+ controller_manager
+ hardware_interface
+ joint_trajectory_controller
+ realtime_tools
+ urdf
+ moveit_core
+ moveit_ros_planning
 #  DEPENDS system_lib
 )
 

@@ -182,9 +182,10 @@ readFTSensor() {
         force_torque(i) = *(force+i);
         force_torque(i+3) = *(torque+i);
     }
-    Matrix3d rot_base_tip = hw_iface_adapter_.getTipTransform();
+    Matrix3d rot_base_tip = hw_iface_adapter_.getTipRotation();
     force_torque.block<3,1>(0,0) = rot_base_tip * force_torque.block<3,1>(0,0).eval();
     force_torque.block<3,1>(3,0) = rot_base_tip * force_torque.block<3,1>(3,0).eval();
+
     return force_torque;
 }
 

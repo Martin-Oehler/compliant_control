@@ -59,5 +59,15 @@ namespace compliant_controller {
             jnt_array(i) = vector(i);
         }
     }
+    void ConversionHelper::eigenToEigen(const Vector6d& vector, Eigen::Affine3d& affine) {
+        double ca1,cb1,cc1,sa1,sb1,sc1;
+        ca1 = cos(vector(5)); sa1 = sin(vector(5));
+        cb1 = cos(vector(4));sb1 = sin(vector(4));
+        cc1 = cos(vector(3));sc1 = sin(vector(3));
+        affine.matrix() << ca1*cb1, ca1*sb1*sc1 - sa1*cc1, ca1*sb1*cc1 + sa1*sc1, vector(0),
+                  sa1*cb1, sa1*sb1*sc1 + ca1*cc1, sa1*sb1*cc1 - ca1*sc1, vector(1),
+                  -sb1,    cb1*sc1,               cb1*cc1,               vector(2),
+                  0,       0,                     0,                     1;
+    }
 
 }

@@ -13,6 +13,7 @@
 #include <vigir_compliant_ros_controller/CustomTypes.h>
 #include <vigir_compliant_ros_controller/CartForceController.h>
 #include <vigir_compliant_ros_controller/CartVelController.h>
+#include <vigir_compliant_ros_controller/InvKinController.h>
 
 template <class HardwareInterface, class State>
 class HardwareInterfaceAdapter {
@@ -28,7 +29,7 @@ public:
   void updateCommand(const ros::Time&     time,
                      const ros::Duration& period,
                      const State&         desired_state) {}
-  compliant_controller::Matrix3d getTipTransform() {return compliant_controller::Matrix3d::Identity();}
+  compliant_controller::Matrix3d getTipRotation() {return compliant_controller::Matrix3d::Identity();}
 };
 
 template <>
@@ -75,7 +76,7 @@ public:
     }
 
     // not realtime safe
-    compliant_controller::Matrix3d getTipTransform() {
+    compliant_controller::Matrix3d getTipRotation() {
         updateJointState();
         KDL::Frame pose;
         cart_force_controller_.getTipPose(pose);
@@ -143,7 +144,7 @@ public:
 
      }
 
-     compliant_controller::Matrix3d getTipTransform() {
+     compliant_controller::Matrix3d getTipRotation() {
          updateJointState();
          KDL::Frame pose;
          cart_force_controller_.getTipPose(pose);
@@ -168,6 +169,53 @@ private:
     compliant_controller::VectorNd torques_;
     compliant_controller::VectorNd joint_positions_;
     compliant_controller::VectorNd joint_velocities_;
+};
+
+template <>
+class HardwareInterfaceAdapter<hardware_interface::PositionJointInterface, compliant_controller::CartState> {
+public:
+  bool init(std::vector<std::string> segment_names, std::vector<hardware_interface::JointHandle>& joint_handles, ros::NodeHandle& controller_nh)
+  {
+      joint_handles_ptr_ = &joint_handles;
+      joint_positions_.resize(joint_handles.size());
+      joint_cmds_.resize(joint_handles.size());
+      if (!inv_kin_controller_.init("r_arm_group")) {
+          return false;
+      }
+    return true;
+  }
+
+  void starting(const ros::Time& time) {}
+  void stopping(const ros::Time& time) {}
+
+  void updateCommand(const ros::Time& time, const ros::Duration& period, const compliant_controller::CartState& desired_state) {
+      for (unsigned int i = 0; i < joint_positions_.size(); i++) {
+          joint_positions_(i) = (*joint_handles_ptr_)[i].getPosition();
+      }
+      inv_kin_controller_.updateJointState(joint_positions_);
+      inv_kin_controller_.calcInvKin(desired_state.position, joint_cmds_);
+      for (unsigned int i = 0; i < joint_cmds_.size(); i++) {
+          (*joint_handles_ptr_)[i].setCommand(joint_cmds_(i));
+      }
+  }
+  compliant_controller::Matrix3d getTipRotation() {
+      for (unsigned int i = 0; i < joint_positions_.size(); i++) {
+          joint_positions_(i) = (*joint_handles_ptr_)[i].getPosition();
+      }
+      inv_kin_controller_.updateJointState(joint_positions_);
+
+      Eigen::Affine3d pose;
+      inv_kin_controller_.getTipTransform(pose);
+      return pose.rotation();
+  }
+
+private:
+  std::vector<hardware_interface::JointHandle>* joint_handles_ptr_;
+  compliant_controller::InvKinController inv_kin_controller_;
+
+  //pre-allocated variables
+  compliant_controller::VectorNd joint_positions_;
+  compliant_controller::VectorNd joint_cmds_;
 };
 
 

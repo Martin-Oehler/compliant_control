@@ -18,6 +18,7 @@ namespace compliant_controller {
         static void kdlToEigen(const KDL::Rotation& rotation, Matrix3d& rotation_eigen);
         static void eigenToKdl(const VectorNd& vector, KDL::JntArray& jnt_array);
         static void eigenToKdl(const Vector6d& vector, KDL::Twist &twist);
+        static void eigenToEigen(const Vector6d& vector, Eigen::Affine3d &affine);
     };
 }
 #endif
