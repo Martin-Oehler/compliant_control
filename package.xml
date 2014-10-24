@@ -50,6 +50,8 @@
   <build_depend>kdl_parser</build_depend>
   <build_depend>moveit_core</build_depend>
   <build_depend>moveit_ros_planning</build_depend>
+  <build_depend>cmake_modules</build_depend>
+  <build_depend>flor_utilities</build_depend>
 
   <run_depend>control_toolbox</run_depend>
   <run_depend>controller_interface</run_depend>
@@ -61,6 +63,7 @@
   <run_depend>kdl_parser</run_depend>
   <run_depend>moveit_core</run_depend>
   <run_depend>moveit_ros_planning</run_depend>
+  <run_depend>flor_utilities</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

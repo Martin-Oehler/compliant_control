@@ -15,6 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
   kdl_parser
   moveit_core
   moveit_ros_planning
+  cmake_modules
+  flor_utilities
 )
 
 ## System dependencies are found with CMake's conventions

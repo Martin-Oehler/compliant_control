@@ -41,18 +41,22 @@ namespace compliant_controller {
             debug << i << ": " << joint_names_[i] << std::endl;
         }
         ROS_INFO_STREAM(debug.str());
+
+        timer_ptr_.reset(new Timing("Inv Kin Timer"));
         return true;
     }
 
     bool InvKinController::calcInvKin(const Vector6d& xd, VectorNd& joint_positions) {
+        timer_ptr_->start();
         Eigen::Affine3d pose;
         ConversionHelper::eigenToEigen(xd, pose);
         geometry_msgs::Pose pose_msg;
         tf::poseEigenToMsg(pose, pose_msg);
 
         moveit_msgs::MoveItErrorCodes error_code;
-        if (!joint_model_group_->getSolverInstance()->searchPositionIK(pose_msg,q_, 0.1, solution_, error_code)) {
+        if (!joint_model_group_->getSolverInstance()->searchPositionIK(pose_msg,q_, 0.0002, solution_, error_code)) {
             ROS_ERROR_STREAM_THROTTLE(1, "Computing IK failed. Error code: " << error_code.val);
+            timer_ptr_->printDebug();
             return false;
         }
 
@@ -65,6 +69,7 @@ namespace compliant_controller {
         for (unsigned int i = 0; i < solution_.size(); i++) {
             joint_positions(i) = solution_[i];
         }
+        timer_ptr_->printDebug();
         return true;
     }
 
