@@ -2,6 +2,8 @@
 #include <vigir_compliant_ros_controller/ConversionHelper.h>
 #include <eigen_conversions/eigen_msg.h>
 
+#include <math.h>
+
 namespace compliant_controller {
     bool InvKinController::init(std::string group_name) {
 
@@ -56,7 +58,21 @@ namespace compliant_controller {
         moveit_msgs::MoveItErrorCodes error_code;
         if (!joint_model_group_->getSolverInstance()->searchPositionIK(pose_msg,q_, 0.0002, solution_, error_code)) {
             ROS_ERROR_STREAM_THROTTLE(1, "Computing IK failed. Error code: " << error_code.val);
-            timer_ptr_->printDebug();
+            timer_ptr_->end();
+            return false;
+        }
+        // find maximum position change
+        double max_change = 0.0;
+        for (unsigned int i = 0; i < solution_.size(); i++) {
+            double change = std::abs(q_[i] - solution_[i]);
+            if (change > max_change) {
+                max_change = change;
+            }
+        }
+       // max_change = max_change*180/M_PI; // in degree
+        if (max_change*180 > 10*M_PI) {
+            ROS_ERROR_STREAM_THROTTLE(1, "Joint angle change too big: " << max_change*180/M_PI << " degree.");
+            timer_ptr_->end();
             return false;
         }
 
@@ -69,7 +85,7 @@ namespace compliant_controller {
         for (unsigned int i = 0; i < solution_.size(); i++) {
             joint_positions(i) = solution_[i];
         }
-        timer_ptr_->printDebug();
+        timer_ptr_->end();
         return true;
     }
 
