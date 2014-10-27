@@ -268,7 +268,14 @@ public:
     return joint_if_adapter_.init(joint_handles,controller_nh);
   }
 
-  void starting(const ros::Time& time) {joint_if_adapter_.starting(time);}
+  void starting(const ros::Time& time) {
+      joint_if_adapter_.starting(time);
+      for (unsigned int i = 0; i < joint_handles_ptr_->size(); i++) {
+          desired_joint_state_.position[i] = (*joint_handles_ptr_)[i].getPosition();
+          desired_joint_state_.velocity[i] = 0.0;
+          desired_joint_state_.acceleration[i] = 0.0;
+      }
+  }
   void stopping(const ros::Time& time) {joint_if_adapter_.stopping(time);}
 
   void updateCommand(const ros::Time& time, const ros::Duration& period, const CartState& desired_state) {
@@ -276,13 +283,13 @@ public:
           joint_positions_(i) = (*joint_handles_ptr_)[i].getPosition();
       }
       inv_kin_controller_.updateJointState(joint_positions_);
-      if (!inv_kin_controller_.calcInvKin(desired_state.position, joint_cmds_)) {
+  /*    if (!inv_kin_controller_.calcInvKin(desired_state.position, joint_cmds_)) {
           ROS_ERROR_STREAM_THROTTLE(1, moveit_group_ << ": Desired state: " << std::endl << desired_state.position);
           ROS_ERROR_STREAM_THROTTLE(1, moveit_group_ << ": Joint state: " << std::endl << joint_positions_);
       }
 
 
-      calcTrajectory(); // call RML
+      calcTrajectory(); // call RML */
 
       for (unsigned int i = 0; i < joint_cmds_.size(); i++) {
           state_error_.position[i] = desired_joint_state_.position[i] - joint_positions_(i);

@@ -46,7 +46,7 @@ CompliantController()
 template <class HardwareInterface>
 inline void CompliantController<HardwareInterface>::
 starting(const ros::Time& time) {
-    ROS_INFO_STREAM("Starting controller: " << name_);
+  ROS_INFO_STREAM("Starting controller: " << name_);
   // Update time data
   TimeData time_data;
   time_data.time   = time;
@@ -58,24 +58,25 @@ starting(const ros::Time& time) {
   desired_state_.position = Vector6d::Zero();
   desired_state_.velocity = Vector6d::Zero();
 
-  // for testing
   Transform pose = hw_iface_adapter_.getTipPose();
   KDL::Rotation rotation;
   ConversionHelper::eigenToKdl(pose.rotation, rotation);
   double roll, pitch, yaw;
   rotation.GetRPY(roll, pitch, yaw);
-//  state_cmd_.position(0) = 0.0130977;
-//  state_cmd_.position(1) = -0.400299;
-//  state_cmd_.position(2) = -0.205006;
-//  state_cmd_.position(3) = 1.33341;
-//  state_cmd_.position(4) = 0.193883;
-//  state_cmd_.position(5) = 1.78593;
   for (unsigned int i = 0; i < 3; i++) {
       state_cmd_.position(i) = pose.translation(i);
   }
   state_cmd_.position(3) = roll;
   state_cmd_.position(4) = pitch;
   state_cmd_.position(5) = yaw;
+  // for testing
+  //  state_cmd_.position(0) = 0.0130977;
+  //  state_cmd_.position(1) = -0.400299;
+  //  state_cmd_.position(2) = -0.205006;
+  //  state_cmd_.position(3) = 1.33341;
+  //  state_cmd_.position(4) = 0.193883;
+  //  state_cmd_.position(5) = 1.78593;
+
 
   admittance_controller_.starting();
   // Hardware interface adapter
