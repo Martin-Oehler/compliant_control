@@ -31,7 +31,7 @@ namespace compliant_controller {
         std::vector<double> solution_;
         std::vector<geometry_msgs::Pose> poses_;
 
-        boost::shared_ptr<Timing> timer_ptr_;
+      //  boost::shared_ptr<Timing> timer_ptr_;
     };
 }
 #endif

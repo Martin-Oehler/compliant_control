@@ -44,21 +44,19 @@ namespace compliant_controller {
         }
         ROS_INFO_STREAM(debug.str());
 
-        timer_ptr_.reset(new Timing("Inv Kin Timer"));
         return true;
     }
 
     bool InvKinController::calcInvKin(const Vector6d& xd, VectorNd& joint_positions) {
-        timer_ptr_->start();
         Eigen::Affine3d pose;
         ConversionHelper::eigenToEigen(xd, pose);
         geometry_msgs::Pose pose_msg;
         tf::poseEigenToMsg(pose, pose_msg);
 
         moveit_msgs::MoveItErrorCodes error_code;
-        if (!joint_model_group_->getSolverInstance()->searchPositionIK(pose_msg,q_, 0.0002, solution_, error_code)) {
+        if (!joint_model_group_->getSolverInstance()->searchPositionIK(pose_msg,q_, 0.1, solution_, error_code)) {
             ROS_ERROR_STREAM_THROTTLE(1, "Computing IK failed. Error code: " << error_code.val);
-            timer_ptr_->end();
+            ROS_ERROR_STREAM_THROTTLE(1, "base frame: " << joint_model_group_->getSolverInstance()->getBaseFrame() << ", " << "tip frame: " << joint_model_group_->getSolverInstance()->getTipFrame());
             return false;
         }
         // find maximum position change
@@ -72,7 +70,6 @@ namespace compliant_controller {
        // max_change = max_change*180/M_PI; // in degree
         if (max_change*180 > 10*M_PI) {
             ROS_ERROR_STREAM_THROTTLE(1, "Joint angle change too big: " << max_change*180/M_PI << " degree.");
-            timer_ptr_->end();
             return false;
         }
 
@@ -85,7 +82,6 @@ namespace compliant_controller {
         for (unsigned int i = 0; i < solution_.size(); i++) {
             joint_positions(i) = solution_[i];
         }
-        timer_ptr_->end();
         return true;
     }
 

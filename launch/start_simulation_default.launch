@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!-- This launch file loads description file and runs in gdb -->
+
+<launch>   
+    <!--Controller parameters-->
+    <rosparam command="load" file="$(find vigir_atlas_controller)/config/controlled_joints.yaml" />
+    <rosparam command="load" file="$(find vigir_atlas_controller)/config/atlas_simple_filter.yaml" />
+    <rosparam command="load" file="$(find vigir_atlas_controller)/config/atlas_gains_sim.yaml" />
+    <rosparam command="load" file="$(find vigir_atlas_controller)/config/atlas_calibration.yaml" />
+    <rosparam command="load" file="$(find vigir_compliant_ros_controller)/config/atlas_active_controllers_by_control_mode.yaml" />
+    <rosparam param="/mode_controllers/control_mode_controller/default_control_mode">"stand" </rosparam>
+
+    <!-- Load the mode controllers parameters -->
+    <rosparam file="$(find vigir_atlas_controller)/config/atlas_controllers.yaml" command="load" ns="mode_controllers"/>
+
+    <!-- Load the robot controllers parameters -->
+    <rosparam file="$(find vigir_compliant_ros_controller)/config/sim_controllers_bdi.yaml" command="load" ns="robot_controllers" />
+    <rosparam file="$(find vigir_atlas_controller)/config/sim_tracking_controllers.yaml" command="load" ns="robot_controllers" />
+
+    <!--Controller node-->
+    <arg name="launch_prefix" default=""/> <!-- "xterm -e gdb -ex run - -args" -->
+    <node name="vigir_atlas_controller" pkg="vigir_atlas_controller"  type="vigir_atlas_controller_sim"   output="screen" launch-prefix="$(arg launch_prefix)" />
+
+    <!--moveit stuff-->
+    <param name="robot_description_semantic" command="$(find xacro)/xacro.py '$(find flor_atlas_moveit_config)/config/flor_atlas.srdf.xacro'" />
+    <rosparam command="load" file="$(find flor_atlas_moveit_config)/config/kinematics.yaml"/>
+ 
+
+    <!-- Relay old controller command topics to new -->
+    <include file="$(find vigir_atlas_controller)/launch/republish_legacy_trajectory_command_topics_to_new.launch" />
+    
+
+</launch>
+

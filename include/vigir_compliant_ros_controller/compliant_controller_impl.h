@@ -31,6 +31,7 @@
 #define COMPLIANT_CONTROLLER_IMPL_H
 
 #include <kdl/frames.hpp>
+#include <vigir_compliant_ros_controller/ConversionHelper.h>
 
 #include <boost/algorithm/string.hpp>
 
@@ -58,13 +59,25 @@ starting(const ros::Time& time) {
   desired_state_.velocity = Vector6d::Zero();
 
   // for testing
-  state_cmd_.position(0) = 0.0130977;
-  state_cmd_.position(1) = -0.400299;
-  state_cmd_.position(2) = -0.205006;
-  state_cmd_.position(3) = 1.33341;
-  state_cmd_.position(4) = 0.193883;
-  state_cmd_.position(5) = 1.78593;
+  Transform pose = hw_iface_adapter_.getTipPose();
+  KDL::Rotation rotation;
+  ConversionHelper::eigenToKdl(pose.rotation, rotation);
+  double roll, pitch, yaw;
+  rotation.GetRPY(roll, pitch, yaw);
+//  state_cmd_.position(0) = 0.0130977;
+//  state_cmd_.position(1) = -0.400299;
+//  state_cmd_.position(2) = -0.205006;
+//  state_cmd_.position(3) = 1.33341;
+//  state_cmd_.position(4) = 0.193883;
+//  state_cmd_.position(5) = 1.78593;
+  for (unsigned int i = 0; i < 3; i++) {
+      state_cmd_.position(i) = pose.translation(i);
+  }
+  state_cmd_.position(3) = roll;
+  state_cmd_.position(4) = pitch;
+  state_cmd_.position(5) = yaw;
 
+  admittance_controller_.starting();
   // Hardware interface adapter
   hw_iface_adapter_.starting(time_data.uptime);
 }
@@ -73,6 +86,7 @@ template <class HardwareInterface>
 inline void CompliantController<HardwareInterface>::
 stopping(const ros::Time& time) {
     ROS_INFO_STREAM("Stopping controller: " << name_);
+    admittance_controller_.stopping();
     hw_iface_adapter_.stopping(time_data_.readFromNonRT()->uptime);
 }
 
@@ -141,7 +155,6 @@ init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controlle
   }
 
   // admittance controller
-  // TODO remove update step. use ros::duration period
   admittance_controller_.init(inertia_, damping_, stiffness_);
 
   // ROS API subscribed topics
@@ -165,11 +178,11 @@ update(const ros::Time& time, const ros::Duration& period) {
   time_data.uptime = time_data_.readFromRT()->uptime + period; // Update controller uptime
   time_data_.writeFromNonRT(time_data); // TODO: Grrr, we need a lock-free data structure here!
 
-  admittance_controller_.calcCompliantPosition(state_cmd_.position, readFTSensor(), desired_state_.position, desired_state_.velocity, period.toSec());
+  //admittance_controller_.update(state_cmd_.position, readFTSensor(), desired_state_.position, desired_state_.velocity, period.toSec());
 
   //Write desired_state and state_error to hardware interface adapter
   hw_iface_adapter_.updateCommand(time_data.uptime, time_data.period,
-                                  desired_state_);
+                                  state_cmd_);
 }
 
 template <class HardwareInterface>
@@ -182,10 +195,11 @@ readFTSensor() {
         force_torque(i) = *(force+i);
         force_torque(i+3) = *(torque+i);
     }
-    Matrix3d rot_base_tip = hw_iface_adapter_.getTipRotation();
+    Matrix3d rot_base_tip = hw_iface_adapter_.getTipPose().rotation;
     force_torque.block<3,1>(0,0) = rot_base_tip * force_torque.block<3,1>(0,0).eval();
     force_torque.block<3,1>(3,0) = rot_base_tip * force_torque.block<3,1>(3,0).eval();
 
+    ROS_INFO_STREAM_THROTTLE(1, name_ << ": ft sensor values: " << std::endl << force_torque);
     return force_torque;
 }
 

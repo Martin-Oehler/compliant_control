@@ -1,0 +1,595 @@
+# Atlas robot controllers
+  footstep_controller:
+    type: vigir_atlas_controllers/AtlasFootstepController
+
+# pelvis controller
+  pelvis_traj_controller:
+    type: "vigir_ros_controllers/PelvisTrajectoryController"
+    joints:
+      - com_v1
+      - com_v0
+      - pelvis_height
+      - pelvis_roll
+      - pelvis_pitch
+      - pelvis_yaw
+    constraints:
+      goal_time: 4.0
+      stopped_velocity_tolerance: 0.1
+      com_v1:
+          goal: &pelvis_goal_pos_constraint 0.025
+          trajectory: &pelvis_trajectory_pos_constraint 0.05
+      com_v0:
+          goal: *pelvis_goal_pos_constraint
+          trajectory: *pelvis_trajectory_pos_constraint
+      pelvis_height:
+          goal: *pelvis_goal_pos_constraint
+          trajectory: *pelvis_trajectory_pos_constraint
+      pelvis_roll:
+          goal: &pelvis_goal_ang_constraint 0.05
+          trajectory: &pelvis_trajectory_ang_constraint 0.05
+      pelvis_pitch:
+          goal: *pelvis_goal_ang_constraint
+          trajectory: *pelvis_trajectory_ang_constraint
+      pelvis_yaw:
+          goal: *pelvis_goal_ang_constraint
+          trajectory: *pelvis_trajectory_ang_constraint
+    stop_trajectory_duration: 1.0
+
+# trajectory controllers ---------------------------------------
+  left_arm_traj_controller:
+    type: "vigir_atlas_controllers/JointTrajectoryController"
+    joints:
+      - l_arm_shy
+      - l_arm_shx
+      - l_arm_ely
+      - l_arm_elx
+      - l_arm_wry
+      - l_arm_wrx
+    constraints:
+      goal_time: &goal_time_constraint 4.0
+      stopped_velocity_tolerance: 1.0
+      l_arm_shy:
+        goal: &goal_pos_constraint 0.5
+        trajectory: &trajectory_pos_constraint 1.0
+      l_arm_shx:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      l_arm_ely:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      l_arm_elx:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      l_arm_wry:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      l_arm_wrx:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+        
+    pid_gains:
+      l_arm_shy: {p: &kp_shy  80.0,  d: &kd_shy  0.0, i: &ki_shy 0.0, i_clamp_min: &iclamp_min -50.0, i_clamp_max: &iclamp_max 50.0}
+      l_arm_shx: {p: &kp_shx  50.0,  d: &kd_shx  0.0, i: &ki_shx 0.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_ely: {p: &kp_ely  13.0,  d: &kd_ely  0.0, i: &ki_ely 0.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_elx: {p: &kp_elx  13.0,  d: &kd_elx  0.0, i: &ki_elx 0.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_wry: {p: &kp_wry  17.0,  d: &kd_wry  0.0, i: &ki_wry 0.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_wrx: {p: &kp_wrx  20.0,  d: &kd_wrx  0.0, i: &ki_wrx 0.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+        
+    bdi_gains:
+      l_arm_shy: {k_q_p: &k_q_p_shy 1600.0,   k_q_i: &k_q_i_arm 0.0, k_qd_p: &k_qd_p_arm 0.05, k_f_p: &k_f_p_arm 0.0, ff_qd: &ff_qd_arm 0.0, ff_qd_d:  &ff_qd_d_arm 0.0, ff_f_d: &ff_f_d_arm  0.0, ff_const: &ff_const_arm 0.0}
+      l_arm_shx: {k_q_p: &k_q_p_shx 1000.0,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      l_arm_ely: {k_q_p: &k_q_p_ely  250.0,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      l_arm_elx: {k_q_p: &k_q_p_elx  250.0,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      l_arm_wry: {k_q_p: &k_q_p_wry  175.0,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      l_arm_wrx: {k_q_p: &k_q_p_wrx  475.0,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+
+    vigir_gains:
+      l_arm_shy: {ff_const: &ff_const_vigir 0.0, ff_acc: &ff_acc_vigir 0.0, ff_pid: &ff_pid_vigir 0.0, ff_effort: &ff_effort_vigir 1.0, ff_dither: &ff_dither_vigir 0.0, ff_bang: &ff_bang_vigir 0.0, blend_bang: &blend_bang_vigir 0.005, ff_friction: &ff_friction_vigir 0.0, effort_factor: &effort_factor 1.0}
+      l_arm_shx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_arm_ely: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_arm_elx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_arm_wry: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_arm_wrx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+
+    stop_trajectory_duration: &stop_duration 0.5
+
+  right_arm_traj_controller:
+    type: "vigir_atlas_controllers/JointTrajectoryController"
+    joints:
+      - r_arm_shy
+      - r_arm_shx
+      - r_arm_ely
+      - r_arm_elx
+      - r_arm_wry
+      - r_arm_wrx
+    constraints:
+      goal_time: *goal_time_constraint
+      stopped_velocity_tolerance: 1.0
+      r_arm_shy:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      r_arm_shx:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      r_arm_ely:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      r_arm_elx:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      r_arm_wry:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      r_arm_wrx:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+        
+    pid_gains:
+      r_arm_shy: {p: *kp_shy, d: *kd_shy, i: *ki_shy, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_arm_shx: {p: *kp_shx, d: *kd_shx, i: *ki_shx, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_arm_ely: {p: *kp_ely, d: *kd_ely, i: *ki_ely, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_arm_elx: {p: *kp_elx, d: *kd_elx, i: *ki_elx, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_arm_wry: {p: *kp_wry, d: *kd_wry, i: *ki_wry, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_arm_wrx: {p: *kp_wrx, d: *kd_wrx, i: *ki_wrx, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+    
+    bdi_gains:
+      r_arm_shy: {k_q_p: *k_q_p_shy,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      r_arm_shx: {k_q_p: *k_q_p_shx,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      r_arm_ely: {k_q_p: *k_q_p_ely,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      r_arm_elx: {k_q_p: *k_q_p_elx,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      r_arm_wry: {k_q_p: *k_q_p_wry,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      r_arm_wrx: {k_q_p: *k_q_p_wrx,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+
+    vigir_gains:
+      r_arm_shy: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_arm_shx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_arm_ely: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_arm_elx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_arm_wry: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_arm_wrx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+
+    stop_trajectory_duration: *stop_duration
+
+    state_publish_rate: 1000
+    
+  torso_traj_controller:
+    type: "vigir_atlas_controllers/JointTrajectoryController"
+    joints:
+      - back_bkz
+      - back_bky
+      - back_bkx
+
+    constraints:
+      goal_time: *goal_time_constraint
+      back_bkz:
+        goal: *goal_pos_constraint
+      back_bky:
+        goal: *goal_pos_constraint
+      back_bkx:
+        goal: *goal_pos_constraint
+        
+    pid_gains:
+      back_bkz: {p: 200.0,  d: 0.0, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      back_bky: {p: 240.0,  d: 0.0, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      back_bkx: {p: 240.0,  d: 0.0, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+    
+    bdi_gains:
+      back_bkz: {k_q_p: &k_q_p_back 1000.0, k_q_i: &k_q_i_back 0.0, k_qd_p: &k_qd_p_back 0.5, k_f_p: &k_f_p_back 0.0, ff_qd: &ff_qd_back 0.0, ff_qd_d:  &ff_qd_d_back 0.0, ff_f_d: &ff_f_d_back  0.0, ff_const: &ff_const_back 0.0}
+      back_bky: {k_q_p: *k_q_p_back,   k_q_i: *k_q_i_back, k_qd_p: *k_qd_p_back, k_f_p: *k_f_p_back, ff_qd: *ff_qd_back, ff_qd_d:  *ff_qd_d_back, ff_f_d: *ff_f_d_back, ff_const: *ff_const_back}
+      back_bkx: {k_q_p: *k_q_p_back,   k_q_i: *k_q_i_back, k_qd_p: *k_qd_p_back, k_f_p: *k_f_p_back, ff_qd: *ff_qd_back, ff_qd_d:  *ff_qd_d_back, ff_f_d: *ff_f_d_back, ff_const: *ff_const_back}
+
+    vigir_gains:
+      back_bkz: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      back_bky: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      back_bkx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+
+    stop_trajectory_duration: *stop_duration
+      
+      
+  left_leg_traj_controller:
+    type: "vigir_atlas_controllers/JointTrajectoryController"
+    joints:
+      - l_leg_hpz
+      - l_leg_hpx
+      - l_leg_hpy
+      - l_leg_kny
+      - l_leg_aky
+      - l_leg_akx
+    constraints:
+      goal_time: *goal_time_constraint
+      l_leg_hpz:
+        goal: *goal_pos_constraint
+      l_leg_hpx:
+        goal: *goal_pos_constraint
+      l_leg_hpy:
+        goal: *goal_pos_constraint
+      l_leg_kny:
+        goal: *goal_pos_constraint
+      l_leg_aky:
+        goal: *goal_pos_constraint
+      l_leg_akx:
+        goal: *goal_pos_constraint     
+        
+    pid_gains:
+      l_leg_hpz: {p: &kp_hpz  450.0, d: &kd_leg 0.0, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_leg_hpx: {p: &kp_hpx  300.0, d: *kd_leg,       i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_leg_hpy: {p: &kp_hpy 1000.0, d: *kd_leg,       i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_leg_kny: {p: &kp_kny  900.0, d: *kd_leg,       i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_leg_aky: {p: &kp_aky  900.0, d: *kd_leg,       i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_leg_akx: {p: &kp_akx  400.0, d: *kd_leg,       i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      
+    bdi_gains:
+      l_leg_hpz: {k_q_p: &k_q_p_leg 0.0,   k_q_i: &k_q_i_leg 0.0, k_qd_p: &k_qd_p_leg 0.0, k_f_p: &k_f_p_leg 0.0, ff_qd: &ff_qd_leg 0.0, ff_qd_d:  &ff_qd_d_leg 0.0, ff_f_d: &ff_f_d_leg  0.0, ff_const: &ff_const_leg 0.0}
+      l_leg_hpx: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      l_leg_hpy: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      l_leg_kny: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      l_leg_aky: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      l_leg_akx: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+
+    vigir_gains:
+      l_leg_hpz: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_leg_hpx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_leg_hpy: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_leg_kny: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_leg_aky: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_leg_akx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+
+    stop_trajectory_duration: *stop_duration
+      
+  right_leg_traj_controller:
+    type: "vigir_atlas_controllers/JointTrajectoryController"
+    joints:
+      - r_leg_hpz
+      - r_leg_hpx
+      - r_leg_hpy
+      - r_leg_kny
+      - r_leg_aky
+      - r_leg_akx
+    constraints:
+      goal_time: *goal_time_constraint
+      r_leg_hpz:
+        goal: *goal_pos_constraint
+      r_leg_hpx:
+        goal: *goal_pos_constraint
+      r_leg_hpy:
+        goal: *goal_pos_constraint
+      r_leg_kny:
+        goal: *goal_pos_constraint
+      r_leg_aky:
+        goal: *goal_pos_constraint
+      r_leg_akx:
+        goal: *goal_pos_constraint     
+
+    pid_gains:
+      r_leg_hpz: {p: *kp_hpz, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_leg_hpx: {p: *kp_hpx, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_leg_hpy: {p: *kp_hpy, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_leg_kny: {p: *kp_kny, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_leg_aky: {p: *kp_aky, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_leg_akx: {p: *kp_akx, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      
+    bdi_gains:
+      r_leg_hpz: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      r_leg_hpx: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      r_leg_hpy: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      r_leg_kny: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      r_leg_aky: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      r_leg_akx: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+
+    vigir_gains:
+      r_leg_hpz: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_leg_hpx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_leg_hpy: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_leg_kny: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_leg_aky: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_leg_akx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+
+    stop_trajectory_duration: *stop_duration
+    
+  neck_traj_controller:
+    type: "vigir_atlas_controllers/JointTrajectoryController"
+    joints:
+      - neck_ry
+    constraints:
+      goal_time: *goal_time_constraint
+      neck_ry:
+        goal: *goal_pos_constraint
+    
+    pid_gains:
+      neck_ry: {p: 32.0,  d: 0.005, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+    
+    bdi_gains:
+      neck_ry: {k_q_p: &k_q_p_neck 0.0,   k_q_i: &k_q_i_neck 0.0, k_qd_p: &k_qd_p_neck 0.0, k_f_p: &k_f_p_neck 0.0, ff_qd: &ff_qd_neck 0.0, ff_qd_d:  &ff_qd_d_neck 0.0, ff_f_d: &ff_f_d_neck  0.0, ff_const: &ff_const_neck 0.0}
+
+    vigir_gains:
+      neck_ry: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+
+    stop_trajectory_duration: *stop_duration
+
+# Every thing except neck controller
+  whole_body_traj_controller:
+    type: "vigir_atlas_controllers/JointTrajectoryController"
+    joints:
+      - back_bkz
+      - back_bky
+      - back_bkx
+      - l_leg_hpz
+      - l_leg_hpx
+      - l_leg_hpy
+      - l_leg_kny
+      - l_leg_aky
+      - l_leg_akx
+      - r_leg_hpz
+      - r_leg_hpx
+      - r_leg_hpy
+      - r_leg_kny
+      - r_leg_aky
+      - r_leg_akx
+      - l_arm_shy
+      - l_arm_shx
+      - l_arm_ely
+      - l_arm_elx
+      - l_arm_wry
+      - l_arm_wrx
+      - r_arm_shy
+      - r_arm_shx
+      - r_arm_ely
+      - r_arm_elx
+      - r_arm_wry
+      - r_arm_wrx
+
+    constraints:
+      goal_time: *goal_time_constraint
+      back_bkz:
+        goal: *goal_pos_constraint
+      back_bky:
+        goal: *goal_pos_constraint
+      back_bkx:
+        goal: *goal_pos_constraint
+      l_arm_shy:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      l_arm_shx:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      l_arm_ely:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      l_arm_elx:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      l_arm_wry:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      l_arm_wrx:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      r_arm_shy:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      r_arm_shx:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      r_arm_ely:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      r_arm_elx:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      r_arm_wry:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      r_arm_wrx:
+        goal: *goal_pos_constraint
+        trajectory: *trajectory_pos_constraint
+      l_leg_hpz:
+        goal: *goal_pos_constraint
+      l_leg_hpx:
+        goal: *goal_pos_constraint
+      l_leg_hpy:
+        goal: *goal_pos_constraint
+      l_leg_kny:
+        goal: *goal_pos_constraint
+      l_leg_aky:
+        goal: *goal_pos_constraint
+      l_leg_akx:
+        goal: *goal_pos_constraint
+      r_leg_hpz:
+        goal: *goal_pos_constraint
+      r_leg_hpx:
+        goal: *goal_pos_constraint
+      r_leg_hpy:
+        goal: *goal_pos_constraint
+      r_leg_kny:
+        goal: *goal_pos_constraint
+      r_leg_aky:
+        goal: *goal_pos_constraint
+      r_leg_akx:
+        goal: *goal_pos_constraint
+
+    pid_gains:
+      back_bkz: {p: 200.0,  d: 0.0, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      back_bky: {p: 240.0,  d: 0.0, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      back_bkx: {p: 240.0,  d: 0.0, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_shy: {p: *kp_shy, d: *kd_shy, i: *ki_shy, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_shx: {p: *kp_shx, d: *kd_shx, i: *ki_shx, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_ely: {p: *kp_ely, d: *kd_ely, i: *ki_ely, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_elx: {p: *kp_elx, d: *kd_elx, i: *ki_elx, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_wry: {p: *kp_wry, d: *kd_wry, i: *ki_wry, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_wrx: {p: *kp_wrx, d: *kd_wrx, i: *ki_wrx, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_arm_shy: {p: *kp_shy, d: *kd_shy, i: *ki_shy, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_arm_shx: {p: *kp_shx, d: *kd_shx, i: *ki_shx, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_arm_ely: {p: *kp_ely, d: *kd_ely, i: *ki_ely, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_arm_elx: {p: *kp_elx, d: *kd_elx, i: *ki_elx, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_arm_wry: {p: *kp_wry, d: *kd_wry, i: *ki_wry, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_arm_wrx: {p: *kp_wrx, d: *kd_wrx, i: *ki_wrx, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_leg_hpz: {p: *kp_hpz, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_leg_hpx: {p: *kp_hpx, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_leg_hpy: {p: *kp_hpy, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_leg_kny: {p: *kp_kny, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_leg_aky: {p: *kp_aky, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_leg_akx: {p: *kp_akx, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_leg_hpz: {p: *kp_hpz, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_leg_hpx: {p: *kp_hpx, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_leg_hpy: {p: *kp_hpy, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_leg_kny: {p: *kp_kny, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_leg_aky: {p: *kp_aky, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_leg_akx: {p: *kp_akx, d: *kd_leg, i: 0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+
+    bdi_gains:
+      back_bkz: {k_q_p: *k_q_p_back,   k_q_i: *k_q_i_back, k_qd_p: *k_qd_p_back, k_f_p: *k_f_p_back, ff_qd: *ff_qd_back, ff_qd_d:  *ff_qd_d_back, ff_f_d: *ff_f_d_back, ff_const: *ff_const_back}
+      back_bky: {k_q_p: *k_q_p_back,   k_q_i: *k_q_i_back, k_qd_p: *k_qd_p_back, k_f_p: *k_f_p_back, ff_qd: *ff_qd_back, ff_qd_d:  *ff_qd_d_back, ff_f_d: *ff_f_d_back, ff_const: *ff_const_back}
+      back_bkx: {k_q_p: *k_q_p_back,   k_q_i: *k_q_i_back, k_qd_p: *k_qd_p_back, k_f_p: *k_f_p_back, ff_qd: *ff_qd_back, ff_qd_d:  *ff_qd_d_back, ff_f_d: *ff_f_d_back, ff_const: *ff_const_back}
+      l_arm_shy: {k_q_p: *k_q_p_shy,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      l_arm_shx: {k_q_p: *k_q_p_shx,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      l_arm_ely: {k_q_p: *k_q_p_ely,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      l_arm_elx: {k_q_p: *k_q_p_elx,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      l_arm_wry: {k_q_p: *k_q_p_wry,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      l_arm_wrx: {k_q_p: *k_q_p_wrx,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      r_arm_shy: {k_q_p: *k_q_p_shy,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      r_arm_ely: {k_q_p: *k_q_p_ely,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      r_arm_elx: {k_q_p: *k_q_p_elx,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      r_arm_wry: {k_q_p: *k_q_p_wry,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      r_arm_wrx: {k_q_p: *k_q_p_wrx,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      l_leg_hpz: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      l_leg_hpx: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      l_leg_hpy: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      l_leg_kny: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      l_leg_aky: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      l_leg_akx: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      r_leg_hpz: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      r_leg_hpx: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      r_leg_hpy: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      r_leg_kny: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      r_leg_aky: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+      r_leg_akx: {k_q_p: *k_q_p_leg,   k_q_i: *k_q_i_leg, k_qd_p: *k_qd_p_leg, k_f_p: *k_f_p_leg, ff_qd: *ff_qd_leg, ff_qd_d:  *ff_qd_d_leg, ff_f_d: *ff_f_d_leg, ff_const: *ff_const_leg}
+
+    vigir_gains:
+      back_bkz: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      back_bky: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      back_bkx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_arm_shy: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_arm_shx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_arm_ely: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_arm_elx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_arm_wry: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_arm_wrx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_arm_shy: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_arm_shx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_arm_ely: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_arm_elx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_arm_wry: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_arm_wrx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_leg_hpz: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_leg_hpx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_leg_hpy: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_leg_kny: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_leg_aky: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_leg_akx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_leg_hpz: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_leg_hpx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_leg_hpy: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_leg_kny: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_leg_aky: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_leg_akx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+
+    stop_trajectory_duration: *stop_duration
+
+# left arm compliant controller ---------------------------------------
+  left_arm_compliant_controller:
+    type: "atlas_controllers/CompliantController"
+    ft_sensor_name: l_hand_filtered
+    joints:
+      - l_arm_shy
+      - l_arm_shx
+      - l_arm_ely
+      - l_arm_elx
+      - l_arm_wry
+      - l_arm_wrx
+    segments:
+      - utorso
+      - l_clav
+      - l_scap
+      - l_uarm
+      - l_larm
+      - l_farm
+      - l_hand
+    moveit_group: "l_arm_group"
+    inertia: "150,150,150,150,150,150"
+    damping: "250,250,250,250,250,250"
+    stiffness: "400,400,400,400,400,400"
+    cmd_topic_name: "/l_arm_pose"
+
+    pid_gains:
+      l_arm_shy: {p: *kp_shy, d: *kd_shy, i: *ki_shy, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_shx: {p: *kp_shx, d: *kd_shx, i: *ki_shx, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_ely: {p: *kp_ely, d: *kd_ely, i: *ki_ely, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_elx: {p: *kp_elx, d: *kd_elx, i: *ki_elx, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_wry: {p: *kp_wry, d: *kd_wry, i: *ki_wry, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_wrx: {p: *kp_wrx, d: *kd_wrx, i: *ki_wrx, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+    
+    bdi_gains:
+      l_arm_shy: {k_q_p: *k_q_p_shy,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      l_arm_shx: {k_q_p: *k_q_p_shx,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      l_arm_ely: {k_q_p: *k_q_p_ely,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      l_arm_elx: {k_q_p: *k_q_p_elx,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      l_arm_wry: {k_q_p: *k_q_p_wry,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      l_arm_wrx: {k_q_p: *k_q_p_wrx,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+
+    vigir_gains:
+      l_arm_shy: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_arm_shx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_arm_ely: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_arm_elx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_arm_wry: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      l_arm_wrx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+
+# right arm compliant controller ---------------------------------------
+  right_arm_compliant_controller:
+    type: "atlas_controllers/CompliantController"
+    ft_sensor_name: r_hand_filtered
+    joints:
+      - r_arm_shy
+      - r_arm_shx
+      - r_arm_ely
+      - r_arm_elx
+      - r_arm_wry
+      - r_arm_wrx
+    segments:
+      - utorso
+      - r_clav
+      - r_scap
+      - r_uarm
+      - r_larm
+      - r_farm
+      - r_hand
+    moveit_group: "r_arm_group"
+    inertia: "150,150,150,150,150,150"
+    damping: "250,250,250,250,250,250"
+    stiffness: "400,400,400,400,400,400"
+    cmd_topic_name: "/r_arm_pose"
+
+    pid_gains:
+      r_arm_shy: {p: *kp_shy, d: *kd_shy, i: *ki_shy, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_arm_shx: {p: *kp_shx, d: *kd_shx, i: *ki_shx, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_arm_ely: {p: *kp_ely, d: *kd_ely, i: *ki_ely, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_arm_elx: {p: *kp_elx, d: *kd_elx, i: *ki_elx, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_arm_wry: {p: *kp_wry, d: *kd_wry, i: *ki_wry, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      r_arm_wrx: {p: *kp_wrx, d: *kd_wrx, i: *ki_wrx, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+    
+    bdi_gains:
+      r_arm_shy: {k_q_p: *k_q_p_shy,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      r_arm_shx: {k_q_p: *k_q_p_shx,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      r_arm_ely: {k_q_p: *k_q_p_ely,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      r_arm_elx: {k_q_p: *k_q_p_elx,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      r_arm_wry: {k_q_p: *k_q_p_wry,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+      r_arm_wrx: {k_q_p: *k_q_p_wrx,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
+
+    vigir_gains:
+      r_arm_shy: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_arm_shx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_arm_ely: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_arm_elx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_arm_wry: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      r_arm_wrx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+

@@ -35,7 +35,15 @@ namespace compliant_controller {
         return f_out;
     }
 
-    void AdmittanceController::calcCompliantPosition(const Vector6d &x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size) {
+    void AdmittanceController::starting() {
+        e_ = Eigen::Matrix<double, 12, 1>::Zero();
+    }
+
+    void AdmittanceController::stopping() {
+
+    }
+
+    void AdmittanceController::update(const Vector6d &x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size) {
         e_ = e_ + step_size * f(f_ext);                // e_(k+1) = e_k + h*f(e_k, f_ext)
         xd = x0 + getE1();                        // add the calculated position offset to our virtual set point
         xdotd = getE2();

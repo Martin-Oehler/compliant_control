@@ -67,7 +67,7 @@
 #include <geometry_msgs/PoseStamped.h>
 
 #include <vigir_compliant_ros_controller/ConversionHelper.h>
-#include <joint_trajectory_controller/joint_trajectory_segment.h>
+//#include <joint_trajectory_controller/joint_trajectory_segment.h>
 
 namespace compliant_controller
 {
@@ -131,17 +131,17 @@ private:
     ros::Time     uptime; ///< Controller uptime. Set to zero at every restart.
   };
 
-  typedef HardwareInterfaceAdapter<HardwareInterface, compliant_controller::CartState> HwIfaceAdapter;
+  typedef HardwareInterfaceAdapter<HardwareInterface, CartState> HwIfaceAdapter;
   typedef typename HardwareInterface::ResourceHandleType JointHandle;
 
   bool                      verbose_;            ///< Hard coded verbose flag to help in debugging
   std::string               name_;               ///< Controller name.
   std::vector<JointHandle>  joints_;             ///< Handles to controlled joints.
   std::vector<std::string>  joint_names_;        ///< Controlled joint names.
-  std::vector<std::string> segment_names_;
+  std::vector<std::string>  segment_names_;
 
-  compliant_controller::CartState state_cmd_;        ///< virtual setpoint
-  compliant_controller::CartState desired_state_;    ///< compliant pose
+  CartState state_cmd_;        ///< virtual setpoint
+  CartState desired_state_;    ///< compliant pose
 
   HwIfaceAdapter            hw_iface_adapter_;   ///< Adapts desired trajectory state to HW interface.
 

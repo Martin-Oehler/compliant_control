@@ -20,6 +20,10 @@ namespace compliant_controller {
         }
     }
 
+   void ConversionHelper::kdlToEigen(const KDL::Frame& frame, Transform& transform) {
+        kdlToEigen(frame.p, transform.translation);
+        kdlToEigen(frame.M, transform.rotation);
+   }
     void ConversionHelper::kdlToEigen(const KDL::Jacobian &jacobian, Jacobian& jac_eigen) {
         jac_eigen = jacobian.data;
     }
@@ -59,6 +63,25 @@ namespace compliant_controller {
             jnt_array(i) = vector(i);
         }
     }
+    void ConversionHelper::eigenToKdl(const Transform& transform, KDL::Frame& frame) {
+        eigenToKdl(transform.rotation, frame.M);
+        eigenToKdl(transform.translation, frame.p);
+    }
+
+    void ConversionHelper::eigenToKdl(const Matrix3d& matrix, KDL::Rotation& rotation) {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                rotation(i, j) = matrix(i, j);
+            }
+        }
+    }
+
+    void ConversionHelper::eigenToKdl(const Vector3d& eigen_vector, KDL::Vector& kdl_vector) {
+        for (int i = 0; i < 3; i++) {
+            kdl_vector(i) = eigen_vector(i);
+        }
+    }
+
     void ConversionHelper::eigenToEigen(const Vector6d& vector, Eigen::Affine3d& affine) {
         double ca1,cb1,cc1,sa1,sb1,sc1;
         ca1 = cos(vector(5)); sa1 = sin(vector(5));

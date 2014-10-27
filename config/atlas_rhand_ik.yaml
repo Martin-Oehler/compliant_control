@@ -1,4 +1,4 @@
-# trajectory controllers ---------------------------------------
+# right arm compliant controller ---------------------------------------
   right_arm_compliant_controller:
     type: "position_controllers/CompliantController"
     ft_sensor_name: right_hand_ft_sensor
@@ -17,24 +17,8 @@
       - r_larm
       - r_farm
       - r_hand
+    moveit_group: "r_arm_group"
     inertia: "150,150,150,150,150,150"
     damping: "250,250,250,250,250,250"
     stiffness: "400,400,400,400,400,400"
     cmd_topic_name: "/r_arm_pose"
-#    constraints:
-#      goal_time: &goal_time_constraint 0.6
-#      l_arm_shy:
-#        goal: &goal_pos_constraint 0.02
-#      l_arm_shx:
-#        goal: *goal_pos_constraint
-#      l_arm_ely:
-#        goal: *goal_pos_constraint
-#      l_arm_elx:
-#        goal: *goal_pos_constraint
-#      l_arm_wry:
-#        goal: *goal_pos_constraint
-#      l_arm_wrx:
-#        goal: *goal_pos_constraint
-        
-#    stop_trajectory_duration: 0.0
-#    state_publish_rate: 1000.0

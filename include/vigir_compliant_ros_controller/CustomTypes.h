@@ -58,6 +58,18 @@ typedef struct CartState {
     Vector6d velocity;
 } CartState;
 
+typedef struct JointState {
+    JointState() {}
+    JointState(unsigned int joint_count) {
+        position.resize(joint_count, 0);
+        velocity.resize(joint_count, 0);
+        acceleration.resize(joint_count, 0);
+    }
+    std::vector<double> position;
+    std::vector<double> velocity;
+    std::vector<double> acceleration;
+} JointState;
+
 typedef struct Wrench
 {
     Wrench() : force(0.0, 0.0, 0.0), torque(0.0, 0.0,0.0) {}

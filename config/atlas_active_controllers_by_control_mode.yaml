@@ -1,0 +1,119 @@
+#0	BEHAVIOR_NONE,        //!< Robot currently not in any behavior; software freeze, controls disabled.
+#1	BEHAVIOR_FREEZE,      //!< All joints frozen in current position.
+#2	BEHAVIOR_STAND_PREP,  //!< Robot assumes a balanced posture, preparing for Stand.
+#3	BEHAVIOR_STAND,       //!< Statically stable stand.
+#4	BEHAVIOR_WALK,        //!< Dynamically stable walk.
+#5	BEHAVIOR_STEP,        //!< Statically stable, single-step walk.
+#6	BEHAVIOR_MANIPULATE,  //!< Statically stable stand, with upper body joints controlled by user.
+#7	BEHAVIOR_USER,        //!< Setpoints and gains set by user.
+#8	BEHAVIOR_CALIBRATE,   //!< Robot moves through various calibration motions, returns to Freeze.
+#9	BEHAVIOR_SOFT_STOP,   //!< "Safe" falling behavior, robot tucks its arms and legs and uses soft position gains
+#
+# bdi_mode  : maps to BEHAVIOR_ enum from Atlas interface, for -1 keep current behavior
+# upper_body_control: value of ub_cntrl_ flag in interface : 0=BDI controls, 1=We control, -1=don't change (i.e. preserve the prior setting)
+# switch_mode: when to change active controllers 0=disable, 1=on command, 2=on feedback, 3=force reset of all controllers, 4=force reset but maintain current
+# active_controllers: list of named controllers that we will start and stop when switching behavior control modes
+#
+atlas_controller:
+    allowed_control_modes:
+        - "none"
+        - "stop"
+        - "freeze"
+        - "stand_prep"
+        - "stand"
+        - "walk"
+        - "step"
+        - "manipulate"
+        - "whole_body"
+        - "dance"
+        - "calibrate"
+        - "soft_stop"
+        - "stand_manipulate"
+        - "walk_manipulate"
+        - "step_manipulate"
+        - "compliant_manipulate"
+    control_mode_to_controllers:
+#  "none" should be the first controller defined (No controllers active)
+        none:
+            bdi_mode: 1
+            upper_body_control:  0
+            switch_mode: 3
+            active_controllers: []
+        stop:
+#   Force a reset of all controllers and footsteps (trajectory controllers reset to hold current position)
+            bdi_mode: -1
+            upper_body_control:  -1
+            switch_mode: 3
+            active_controllers:  ["left_arm_traj_controller", "right_arm_traj_controller", "torso_traj_controller", "neck_traj_controller", "lower_body_tracking_controller"]
+        freeze:
+# Lock all joints and do a hard reset
+            bdi_mode: 1
+            upper_body_control:  0
+            switch_mode: 3
+            active_controllers: [ "whole_body_tracking_controller", "neck_tracking_controller"]
+        stand_prep:
+            bdi_mode: 2
+            upper_body_control:  0
+            switch_mode: 2
+            active_controllers: [ "neck_traj_controller", "whole_body_tracking_controller"]
+        stand:
+            bdi_mode: 3
+            upper_body_control:  0
+            switch_mode: 2
+            active_controllers: [ "footstep_controller", "whole_body_tracking_controller", "neck_traj_controller"]
+        stand_manipulate:
+            bdi_mode: 3
+            upper_body_control:  1
+            switch_mode: 2
+            active_controllers:  ["footstep_controller", "left_arm_traj_controller", "right_arm_traj_controller", "torso_traj_controller", "lower_body_tracking_controller", "neck_traj_controller"]
+        walk:
+            bdi_mode: 4
+            upper_body_control:  0
+            switch_mode: 1
+            active_controllers: ["footstep_controller", "whole_body_tracking_controller", "neck_traj_controller"]
+        walk_manipulate:
+            bdi_mode: 4
+            upper_body_control:  1
+            switch_mode: 1
+            active_controllers:  ["footstep_controller", "left_arm_traj_controller", "right_arm_traj_controller", "torso_traj_controller", "lower_body_tracking_controller", "neck_traj_controller"]
+        step:
+            bdi_mode: 5
+            upper_body_control:  0
+            switch_mode: 1
+            active_controllers: ["footstep_controller", "whole_body_tracking_controller", "neck_traj_controller"]
+        step_manipulate:
+            bdi_mode: 5
+            upper_body_control:  1
+            switch_mode: 1
+            active_controllers:  ["footstep_controller", "left_arm_traj_controller", "right_arm_traj_controller", "torso_traj_controller", "lower_body_tracking_controller", "neck_traj_controller"]
+        manipulate:
+            bdi_mode: 6
+            upper_body_control:  -1
+            switch_mode: 1
+            active_controllers:  ["pelvis_traj_controller", "left_arm_traj_controller", "right_arm_traj_controller", "torso_traj_controller", "lower_body_tracking_controller", "neck_traj_controller"]
+        whole_body:
+            bdi_mode: 7
+            upper_body_control:  -1
+            switch_mode: 1
+            active_controllers: ["whole_body_traj_controller", "neck_traj_controller"]
+        dance:
+            bdi_mode: 7
+            upper_body_control:  -1
+            switch_mode: 1
+            active_controllers: ["left_arm_traj_controller", "right_arm_traj_controller", "torso_traj_controller", "left_leg_traj_controller", "right_leg_traj_controller", "neck_traj_controller"]
+        calibrate:
+            bdi_mode: 8
+            upper_body_control:  0
+            switch_mode: 2
+            active_controllers: [ "whole_body_tracking_controller", "neck_traj_controller"]
+        soft_stop:
+            bdi_mode: 9
+            upper_body_control:  0
+            switch_mode: 2
+            active_controllers: ["whole_body_tracking_controller", "neck_traj_controller"]
+        compliant_manipulate:
+            bdi_mode: 6
+            upper_body_control:  -1
+            switch_mode: 1
+            active_controllers:  ["pelvis_traj_controller", "left_arm_compliant_controller", "right_arm_compliant_controller", "torso_traj_controller", "lower_body_tracking_controller", "neck_traj_controller"]
+    

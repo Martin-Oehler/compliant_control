@@ -30,8 +30,8 @@
 #include <pluginlib/class_list_macros.h>
 
 // Project
-#include <trajectory_interface/quintic_spline_segment.h>
 #include <vigir_compliant_ros_controller/compliant_controller.h>
+#include <vigir_atlas_interfaces/vigir_atlas_joint_iface.h>
 
 namespace position_controllers
 {
@@ -63,6 +63,13 @@ namespace effort_controllers
           CompliantController;
 }
 
+namespace atlas_controllers
+{
+  typedef compliant_controller::CompliantController<hardware_interface::VigirAtlasJointInterface>
+          CompliantController;
+}
+
 PLUGINLIB_EXPORT_CLASS(position_controllers::CompliantController, controller_interface::ControllerBase)
 PLUGINLIB_EXPORT_CLASS(velocity_controllers::CompliantController, controller_interface::ControllerBase)
 PLUGINLIB_EXPORT_CLASS(effort_controllers::CompliantController,   controller_interface::ControllerBase)
+PLUGINLIB_EXPORT_CLASS(atlas_controllers::CompliantController,   controller_interface::ControllerBase)

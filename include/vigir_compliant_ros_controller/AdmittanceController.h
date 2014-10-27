@@ -8,7 +8,9 @@ namespace compliant_controller {
     public:
         void init(double inertia, double damping, double stiffness);
         void init(Vector6d& inertia, Vector6d& damping, Vector6d& stiffness);
-        void calcCompliantPosition(const Vector6d &x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size);
+        void starting();
+        void stopping();
+        void update(const Vector6d&x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size);
     private:
         Eigen::Matrix<double, 12, 1> f(const Vector6d &f_ext);
         /**

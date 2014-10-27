@@ -17,7 +17,17 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_ros_planning
   cmake_modules
   flor_utilities
+  vigir_atlas_interfaces
+  reflexxes_type2
 )
+
+# Using std::atomic in header
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
+
+## System dependencies are found with CMake's conventions
+# find_package(Boost REQUIRED COMPONENTS system)
+include_directories($ENV{ATLAS_ROBOT_INTERFACE}/include)
+link_directories($ENV{ATLAS_ROBOT_INTERFACE}/lib64)
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
@@ -125,6 +135,7 @@ CATKIN_DEPENDS
  urdf
  moveit_core
  moveit_ros_planning
+ reflexxes_type2
 #  DEPENDS system_lib
 )
 
