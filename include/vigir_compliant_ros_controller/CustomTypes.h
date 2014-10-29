@@ -98,6 +98,10 @@ typedef struct Pose
 typedef struct Transform
 {
     Transform() :translation(0.0,0.0,0.0){ rotation.setIdentity();}
+    Transform(const Matrix3d& _rotation, const Vector3d& _translation) {
+        rotation = _rotation;
+        translation = _translation;
+    }
 
     Vector3d translation;
     Matrix3d rotation;

@@ -179,11 +179,11 @@ update(const ros::Time& time, const ros::Duration& period) {
   time_data.uptime = time_data_.readFromRT()->uptime + period; // Update controller uptime
   time_data_.writeFromNonRT(time_data); // TODO: Grrr, we need a lock-free data structure here!
 
-  //admittance_controller_.update(state_cmd_.position, readFTSensor(), desired_state_.position, desired_state_.velocity, period.toSec());
+  admittance_controller_.update(state_cmd_.position, readFTSensor(), desired_state_.position, desired_state_.velocity, period.toSec());
 
   //Write desired_state and state_error to hardware interface adapter
   hw_iface_adapter_.updateCommand(time_data.uptime, time_data.period,
-                                  state_cmd_);
+                                  desired_state_);
 }
 
 template <class HardwareInterface>
@@ -200,7 +200,7 @@ readFTSensor() {
     force_torque.block<3,1>(0,0) = rot_base_tip * force_torque.block<3,1>(0,0).eval();
     force_torque.block<3,1>(3,0) = rot_base_tip * force_torque.block<3,1>(3,0).eval();
 
-    ROS_INFO_STREAM_THROTTLE(1, name_ << ": ft sensor values: " << std::endl << force_torque);
+    force_torque = Vector6d::Zero();
     return force_torque;
 }
 

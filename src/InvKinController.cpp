@@ -67,7 +67,8 @@ namespace compliant_controller {
                 max_change = change;
             }
         }
-       // max_change = max_change*180/M_PI; // in degree
+
+        // limit joint angle change
         if (max_change*180 > 10*M_PI) {
             ROS_ERROR_STREAM_THROTTLE(1, "Joint angle change too big: " << max_change*180/M_PI << " degree.");
             return false;
