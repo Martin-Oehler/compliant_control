@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!-- This launch file loads description file and runs in gdb -->
+
+<launch>
+    <!--Controller parameters-->
+    <rosparam command="load" file="$(find vigir_atlas_controller)/config/controlled_joints.yaml" />
+    <rosparam command="load" file="$(find vigir_atlas_controller)/config/atlas_simple_filter.yaml" />
+    <rosparam command="load" file="$(find vigir_atlas_controller)/config/atlas_gains.yaml" />
+    <rosparam command="load" file="$(find vigir_atlas_controller)/config/atlas_calibration.yaml" />
+    <rosparam command="load" file="$(find vigir_compliant_ros_controller)/config/atlas_active_controllers_by_control_mode.yaml" />
+    <rosparam param="/mode_controllers/control_mode_controller/default_control_mode">"none" </rosparam>
+
+    <!-- Load the mode controllers parameters -->
+    <rosparam file="$(find vigir_atlas_controller)/config/atlas_controllers.yaml" command="load" ns="mode_controllers"/>
+
+    <!-- Load the robot controllers parameters -->
+    <rosparam file="$(find vigir_compliant_ros_controller)/config/robot_controllers.yaml" command="load" ns="robot_controllers" />
+    <rosparam file="$(find vigir_atlas_controller)/config/robot_tracking_controllers.yaml" command="load" ns="robot_controllers" />
+
+    <!--Controller node-->
+    <arg name="launch_prefix" default=""/> <!-- "xterm -e gdb -ex run - -args" -->
+    <node name="vigir_atlas_controller" pkg="vigir_atlas_controller"  type="vigir_atlas_controller_node"   output="screen" launch-prefix="$(arg launch_prefix)" />
+
+    <!-- Relay old controller command topics to new -->
+    <include file="$(find vigir_atlas_controller)/launch/republish_legacy_trajectory_command_topics_to_new.launch" />
+</launch>
+
