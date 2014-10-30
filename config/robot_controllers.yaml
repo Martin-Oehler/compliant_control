@@ -759,12 +759,12 @@
     cmd_topic_name: "/l_arm_pose"
 
     pid_gains:
-      l_arm_shy: {p: &kp_cc_shy   70.0,  d: &kd_cc_shy   2.0, i: &ki_cc_shy 30.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
-      l_arm_shx: {p: &kp_cc_shx   60.0,  d: &kd_cc_shx   2.0, i: &ki_cc_shx 30.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
-      l_arm_ely: {p: &kp_cc_ely  120.0,  d: &kd_cc_ely   1.0, i: &ki_cc_ely 30.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
-      l_arm_elx: {p: &kp_cc_elx  120.0,  d: &kd_cc_elx   1.0, i: &ki_cc_elx 30.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
-      l_arm_wry: {p: &kp_cc_wry   50.0,  d: &kd_cc_wry   1.0, i: &ki_cc_wry 30.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
-      l_arm_wrx: {p: &kp_cc_wrx   50.0,  d: &kd_cc_wrx   1.0, i: &ki_cc_wrx 30.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_shy: {p: &kp_cc_shy   7.0,  d: &kd_cc_shy   0.2, i: &ki_cc_shy 30.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_shx: {p: &kp_cc_shx   6.0,  d: &kd_cc_shx   0.2, i: &ki_cc_shx 30.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_ely: {p: &kp_cc_ely  12.0,  d: &kd_cc_ely   0.1, i: &ki_cc_ely 30.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_elx: {p: &kp_cc_elx  12.0,  d: &kd_cc_elx   0.1, i: &ki_cc_elx 30.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_wry: {p: &kp_cc_wry   5.0,  d: &kd_cc_wry   0.1, i: &ki_cc_wry 30.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_wrx: {p: &kp_cc_wrx   5.0,  d: &kd_cc_wrx   0.1, i: &ki_cc_wrx 30.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
     
     bdi_gains:
       l_arm_shy: {k_q_p: *k_q_p_arm,   k_q_i: *k_q_i_arm, k_qd_p: *k_qd_p_arm, k_f_p: *k_f_p_arm, ff_qd: *ff_qd_arm, ff_qd_d:  *ff_qd_d_arm, ff_f_d: *ff_f_d_arm, ff_const: *ff_const_arm}
