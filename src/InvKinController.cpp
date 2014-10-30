@@ -54,9 +54,9 @@ namespace compliant_controller {
         tf::poseEigenToMsg(pose, pose_msg);
 
         moveit_msgs::MoveItErrorCodes error_code;
-        if (!joint_model_group_->getSolverInstance()->searchPositionIK(pose_msg,q_, 0.1, solution_, error_code)) {
-            ROS_ERROR_STREAM_THROTTLE(1, "Computing IK failed. Error code: " << error_code.val);
-            ROS_ERROR_STREAM_THROTTLE(1, "base frame: " << joint_model_group_->getSolverInstance()->getBaseFrame() << ", " << "tip frame: " << joint_model_group_->getSolverInstance()->getTipFrame());
+        if (!joint_model_group_->getSolverInstance()->searchPositionIK(pose_msg,q_, 0.0003, solution_, error_code)) {
+            ROS_WARN_STREAM_THROTTLE(1, "Computing IK from " << joint_model_group_->getSolverInstance()->getBaseFrame() << " to " <<
+                                     joint_model_group_->getSolverInstance()->getTipFrame() << " failed. Error code: " << error_code.val);
             return false;
         }
         // find maximum position change
