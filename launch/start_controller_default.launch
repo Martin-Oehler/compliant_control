@@ -20,6 +20,10 @@
     <!--Controller node-->
     <arg name="launch_prefix" default=""/> <!-- "xterm -e gdb -ex run - -args" -->
     <node name="vigir_atlas_controller" pkg="vigir_atlas_controller"  type="vigir_atlas_controller_node"   output="screen" launch-prefix="$(arg launch_prefix)" />
+    
+    <!--moveit stuff-->
+    <param name="robot_description_semantic" command="$(find xacro)/xacro.py '$(find flor_atlas_moveit_config)/config/flor_atlas.srdf.xacro'" />
+    <rosparam command="load" file="$(find flor_atlas_moveit_config)/config/kinematics.yaml"/>
 
     <!-- Relay old controller command topics to new -->
     <include file="$(find vigir_atlas_controller)/launch/republish_legacy_trajectory_command_topics_to_new.launch" />
