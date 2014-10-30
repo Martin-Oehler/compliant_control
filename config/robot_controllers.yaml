@@ -69,12 +69,12 @@
         trajectory: *trajectory_pos_constraint
         
     pid_gains:
-      l_arm_shy: {p: &kp_shy  50.0,  d: &kd_shy  0.05, i: &ki_shy 0.0, i_clamp_min: &iclamp_min -0.26, i_clamp_max: &iclamp_max 0.26}
-      l_arm_shx: {p: &kp_shx  40.0,  d: &kd_shx  0.05, i: &ki_shx 0.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
-      l_arm_ely: {p: &kp_ely  90.0,  d: &kd_ely  0.05, i: &ki_ely 0.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
-      l_arm_elx: {p: &kp_elx  90.0,  d: &kd_elx  0.05, i: &ki_elx 0.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
-      l_arm_wry: {p: &kp_wry  32.0,  d: &kd_wry  0.05, i: &ki_wry 0.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
-      l_arm_wrx: {p: &kp_wrx  32.0,  d: &kd_wrx  0.05, i: &ki_wrx 0.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_shy: {p: &kp_shy   70.0,  d: &kd_shy  0.05, i: &ki_shy 90.0, i_clamp_min: &iclamp_min -2.0, i_clamp_max: &iclamp_max 2.0}
+      l_arm_shx: {p: &kp_shx   60.0,  d: &kd_shx  0.05, i: &ki_shx 90.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_ely: {p: &kp_ely  120.0,  d: &kd_ely  0.05, i: &ki_ely 90.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_elx: {p: &kp_elx  120.0,  d: &kd_elx  0.05, i: &ki_elx 90.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_wry: {p: &kp_wry   50.0,  d: &kd_wry  0.05, i: &ki_wry 90.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      l_arm_wrx: {p: &kp_wrx   50.0,  d: &kd_wrx  0.05, i: &ki_wrx 90.0, i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
         
     bdi_gains:
       l_arm_shy: {k_q_p: &k_q_p_arm 0.0,   k_q_i: &k_q_i_arm 0.0, k_qd_p: &k_qd_p_arm 0.0, k_f_p: &k_f_p_arm 0.0, ff_qd: &ff_qd_arm 0.0, ff_qd_d:  &ff_qd_d_arm 0.8, ff_f_d: &ff_f_d_arm  0.0, ff_const: &ff_const_arm 0.0}
@@ -171,9 +171,9 @@
         goal: *goal_pos_constraint
         
     pid_gains:
-      back_bkz: {p: 200.0,  d: 5.0, i: 0,  i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
-      back_bky: {p: 240.0,  d: 2.0, i: 0,  i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
-      back_bkx: {p: 240.0,  d: 2.0, i: 0,  i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      back_bkz: {p: 200.0,  d: 5.0, i: 90.0,  i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      back_bky: {p: 400.0,  d: 2.0, i: 90.0,  i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
+      back_bkx: {p: 240.0,  d: 2.0, i: 90.0,  i_clamp_min: *iclamp_min, i_clamp_max: *iclamp_max}
     
     bdi_gains:
       back_bkz: {k_q_p: &k_q_p_back 0.0, k_q_i: &k_q_i_back 0.0, k_qd_p: &k_qd_p_back 0.0, k_f_p: &k_f_p_back 0.0, ff_qd: &ff_qd_back 0.0, ff_qd_d:  &ff_qd_d_back 0.3, ff_f_d: &ff_f_d_back  0.0, ff_const: &ff_const_back 0.0}
@@ -496,7 +496,7 @@
       r_leg_akx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
 
     stop_trajectory_duration: *stop_duration
-
+    
 # left arm compliant controller ---------------------------------------
   left_arm_compliant_controller:
     type: "atlas_controllers/CompliantController"
