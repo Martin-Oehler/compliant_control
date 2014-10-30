@@ -60,6 +60,7 @@
 // compliant control
 #include <vigir_compliant_ros_controller/hardware_interface_adapter.h>
 #include <vigir_compliant_ros_controller/AdmittanceController.h>
+#include <vigir_compliant_ros_controller/AdmittanceParamManager.h>
 
 #include <hardware_interface/internal/demangle_symbol.h>
 
@@ -121,6 +122,7 @@ private:
   Vector6d damping_;
   Vector6d stiffness_;
   AdmittanceController admittance_controller_;
+  AdmittanceParamManager admittance_param_manager_;
 
   struct TimeData
   {

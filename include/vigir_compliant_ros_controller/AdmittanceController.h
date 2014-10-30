@@ -11,6 +11,11 @@ namespace compliant_controller {
         void starting();
         void stopping();
         void update(const Vector6d&x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size);
+
+        // Setters and getters
+        void setInertia(double inertia);
+        void setDamping(double damping);
+        void setStiffness(double stiffness);
     private:
         Eigen::Matrix<double, 12, 1> f(const Vector6d &f_ext);
         /**

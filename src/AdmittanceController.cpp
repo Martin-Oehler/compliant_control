@@ -48,4 +48,16 @@ namespace compliant_controller {
         xd = x0 + getE1();                        // add the calculated position offset to our virtual set point
         xdotd = getE2();
     }
+
+    void AdmittanceController::setInertia(double inertia) {
+        Md.setConstant(inertia);
+    }
+
+    void AdmittanceController::setDamping(double damping) {
+        Dd.setConstant(damping);
+    }
+
+    void AdmittanceController::setStiffness(double stiffness) {
+        Kd.setConstant(stiffness);
+    }
 }

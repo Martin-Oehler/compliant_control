@@ -40,7 +40,8 @@ namespace compliant_controller {
 template <class HardwareInterface>
 CompliantController<HardwareInterface>::
 CompliantController()
-  : verbose_(false) // Set to true during debugging
+  : verbose_(false), // Set to true during debugging
+    admittance_param_manager_(admittance_controller_)
 {}
 
 template <class HardwareInterface>
@@ -157,6 +158,8 @@ init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controlle
 
   // admittance controller
   admittance_controller_.init(inertia_, damping_, stiffness_);
+  // admittance param manager
+  admittance_param_manager_.init(controller_nh);
 
   // ROS API subscribed topics
   std::string cmd_topic_name;

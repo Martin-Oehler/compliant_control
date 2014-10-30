@@ -19,10 +19,15 @@ find_package(catkin REQUIRED COMPONENTS
   flor_utilities
   vigir_atlas_interfaces
   reflexxes_type2
+  dynamic_reconfigure
 )
 
 # Using std::atomic in header
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
+
+generate_dynamic_reconfigure_options(
+  cfg/VigirAdmittanceParams.cfg
+)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -101,6 +106,7 @@ set(HEADERS
     include/${PROJECT_NAME}/JointAdmittanceController.h
     include/${PROJECT_NAME}/CustomTypes.h
     include/${PROJECT_NAME}/hardware_interface_adapter.h
+    include/${PROJECT_NAME}/AdmittanceParamManager.h
 )
 
 set(SOURCES
@@ -111,6 +117,7 @@ set(SOURCES
     src/InvKinController.cpp
     src/ConversionHelper.cpp
     src/JointAdmittanceController.cpp
+    src/AdmittanceParamManager.cpp
 )
 
 ###################################
