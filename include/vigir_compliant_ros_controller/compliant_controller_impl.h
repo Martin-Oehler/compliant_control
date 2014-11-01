@@ -202,8 +202,6 @@ readFTSensor() {
     Matrix3d rot_base_tip = hw_iface_adapter_.getTipPose().rotation;
     force_torque.block<3,1>(0,0) = rot_base_tip * force_torque.block<3,1>(0,0).eval();
     force_torque.block<3,1>(3,0) = rot_base_tip * force_torque.block<3,1>(3,0).eval();
-
-    force_torque = Vector6d::Zero();
     return force_torque;
 }
 

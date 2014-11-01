@@ -37,6 +37,7 @@ namespace compliant_controller {
 
     void AdmittanceController::starting() {
         e_ = Eigen::Matrix<double, 12, 1>::Zero();
+        active_ = false;
     }
 
     void AdmittanceController::stopping() {
@@ -44,9 +45,19 @@ namespace compliant_controller {
     }
 
     void AdmittanceController::update(const Vector6d &x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size) {
-        e_ = e_ + step_size * f(f_ext);                // e_(k+1) = e_k + h*f(e_k, f_ext)
+        if (!active_) {
+            e_ = e_ + step_size * f(Vector6d::Zero()); // use zero force if deactivated
+        } else {
+            e_ = e_ + step_size * f(f_ext);                // e_(k+1) = e_k + h*f(e_k, f_ext)
+        }
         xd = x0 + getE1();                        // add the calculated position offset to our virtual set point
         xdotd = getE2();
+    }
+
+
+    // Setters and getters
+    void AdmittanceController::activate(bool active) {
+        active_ = active;
     }
 
     void AdmittanceController::setInertia(double inertia) {

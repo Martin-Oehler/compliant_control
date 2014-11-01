@@ -60,7 +60,7 @@ atlas_controller:
             bdi_mode: 3
             upper_body_control:  0
             switch_mode: 2
-            active_controllers: [ "footstep_controller", "whole_body_tracking_controller", "neck_traj_controller"]
+            active_controllers: [ "footstep_controller", "whole_body_tracking_controller", "neck_traj_controller", "force_torque_sensor_controller"]
         stand_manipulate:
             bdi_mode: 3
             upper_body_control:  1
@@ -115,5 +115,5 @@ atlas_controller:
             bdi_mode: 6
             upper_body_control:  -1
             switch_mode: 1
-            active_controllers:  ["pelvis_traj_controller", "left_arm_compliant_controller", "right_arm_compliant_controller", "torso_traj_controller", "lower_body_tracking_controller", "neck_traj_controller"]
+            active_controllers:  ["pelvis_traj_controller", "left_arm_compliant_controller", "right_arm_compliant_controller", "torso_traj_controller", "lower_body_tracking_controller", "neck_traj_controller", "force_torque_sensor_controller"]
     

@@ -16,7 +16,7 @@ void AdmittanceParamManager::init(ros::NodeHandle& nh) {
 }
 
 void AdmittanceParamManager::dynamicReconfigCB(vigir_compliant_ros_controller::VigirAdmittanceParamsConfig &config, uint32_t level) {
-    setAdmittanceParams(config.inertia, config.damping, config.stiffness);
+    setAdmittanceParams(config.active, config.inertia, config.damping, config.stiffness);
 }
 
 void AdmittanceParamManager::updateDynamicReconfig(vigir_compliant_ros_controller::VigirAdmittanceParamsConfig &config) {
@@ -25,7 +25,8 @@ void AdmittanceParamManager::updateDynamicReconfig(vigir_compliant_ros_controlle
     param_reconfig_mutex_.unlock();
 }
 
-void AdmittanceParamManager::setAdmittanceParams(double inertia, double damping, double stiffness) {
+void AdmittanceParamManager::setAdmittanceParams(bool active, double inertia, double damping, double stiffness) {
+    controller_->activate(active);
     controller_->setInertia(inertia);
     controller_->setDamping(damping);
     controller_->setStiffness(stiffness);
@@ -36,6 +37,7 @@ void AdmittanceParamManager::setAdmittanceParams(double inertia, double damping,
     config.inertia = inertia;
     config.stiffness = stiffness;
     config.damping = damping;
+    config.active = active;
     updateDynamicReconfig(config);
 }
 

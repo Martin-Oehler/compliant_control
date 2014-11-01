@@ -830,4 +830,11 @@
       r_arm_elx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
       r_arm_wry: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
       r_arm_wrx: {ff_const: *ff_const_vigir, ff_acc: *ff_acc_vigir, ff_pid: *ff_pid_vigir, ff_effort: *ff_effort_vigir, ff_dither: *ff_dither_vigir, ff_bang: *ff_bang_vigir, blend_bang: *blend_bang_vigir, ff_friction: *ff_friction_vigir, effort_factor: *effort_factor}
+      
+# force torque controller ---------------------------------------
+# Publishes values of all handles of the ForceTorqueInterface as PoseStamped.
+  force_torque_sensor_controller:
+    type: force_torque_sensor_controller/ForceTorqueSensorController
+    publish_rate: 1000
+
 
