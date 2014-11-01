@@ -24,6 +24,9 @@
     <!--moveit stuff-->
     <param name="robot_description_semantic" command="$(find xacro)/xacro.py '$(find flor_atlas_moveit_config)/config/flor_atlas.srdf.xacro'" />
     <rosparam command="load" file="$(find flor_atlas_moveit_config)/config/kinematics.yaml"/>
+    
+        <!-- ft sensor calibration configs -->
+    <rosparam command="load" file="$(find force_torque_calibration)/config/ft_left_arm_robotiq_2014-10-30-16-07-23_l_hand_new.yaml" ns="/vigir_atlas_controller/l_hand_ft_compensation" />
 
     <!-- Relay old controller command topics to new -->
     <include file="$(find vigir_atlas_controller)/launch/republish_legacy_trajectory_command_topics_to_new.launch" />
