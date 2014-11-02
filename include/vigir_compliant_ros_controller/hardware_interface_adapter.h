@@ -18,10 +18,6 @@
 // atlas
 #include <vigir_atlas_interfaces/vigir_atlas_joint_iface_adapter.h>
 
-// reflexxes
-#include<ReflexxesAPI.h>
-#include <urdf/model.h>
-
 namespace compliant_controller {
 
 template <class HardwareInterface, class State>
@@ -259,13 +255,9 @@ public:
       if (!inv_kin_controller_.init(moveit_group_)) { // add moveit group to config
           return false;
       }
-      // init reflexxes
-//      if (!setUpRML(controller_nh)) {
-//          return false;
-//      }
 
       // init vigir joint interface adapter
-    return joint_if_adapter_.init(joint_handles,controller_nh);
+      return joint_if_adapter_.init(joint_handles,controller_nh);
   }
 
   void starting(const ros::Time& time) {
@@ -290,9 +282,6 @@ public:
           desired_joint_state_.velocity[i] = 0.0;
           desired_joint_state_.acceleration[i] = 0.0;
       }
-
-      //calcTrajectory(); // call RML
-
       for (unsigned int i = 0; i < joint_cmds_.size(); i++) {
           state_error_.position[i] = desired_joint_state_.position[i] - joint_positions_(i);
           state_error_.velocity[i] = desired_joint_state_.velocity[i] - (*joint_handles_ptr_)[i].getVelocity();
@@ -315,171 +304,6 @@ public:
 
 
 private:
-//  bool setUpRML(ros::NodeHandle& controller_nh) {
-//      rml_.reset(new ReflexxesAPI(joint_handles_ptr_->size(), 0.001));
-//      rml_in_.reset(new RMLPositionInputParameters(joint_handles_ptr_->size()));
-//      rml_out_.reset(new RMLPositionOutputParameters(joint_handles_ptr_->size()));
-
-//      rml_in_->SetMinimumSynchronizationTime(0.01);
-//      rml_flags_.BehaviorAfterFinalStateOfMotionIsReached = RMLPositionFlags::RECOMPUTE_TRAJECTORY;
-//      rml_flags_.SynchronizationBehavior = RMLPositionFlags::ONLY_TIME_SYNCHRONIZATION;
-
-//      // max values
-//      urdf::Model urdf_model;
-//      std::string robot_description;
-//      controller_nh.getParam("/robot_description", robot_description);
-//      if (!urdf_model.initString(robot_description)) {
-//          ROS_ERROR_STREAM("Failed to get robot_description from parameter server.");
-//          return false;
-//      }
-
-//      for (unsigned int i; i < joint_handles_ptr_->size(); i++) {
-//          boost::shared_ptr<const urdf::Joint> joint = urdf_model.getJoint((*joint_handles_ptr_)[i].getName());
-//          if (!joint) {
-//              ROS_ERROR_STREAM("Couldn't find joint " << (*joint_handles_ptr_)[i].getName() << " in urdf model.");
-//              return false;
-//          }
-//          rml_in_->MaxVelocityVector->VecData[i] = joint->limits->velocity;
-//          rml_in_->MaxAccelerationVector->VecData[i]  = 50; // TODO set legit value
-//          rml_in_->MaxJerkVector->VecData[i] = 50; // TODO set legit value
-//          rml_in_->SelectionVector->VecData[i] = true;
-//      }
-//      if (rml_in_->CheckForValidity()) {
-//          ROS_INFO_STREAM("RML INPUT valid");
-//          return true;
-//      } else {
-//          ROS_ERROR_STREAM("RML INPUT invalid");
-//          return false;
-//      }
-
-//  }
-
-//  bool calcTrajectory() {
-//      // set up input
-//      for (unsigned int i = 0; i < joint_handles_ptr_->size(); i++) {
-//          // set target
-//          rml_in_->TargetPositionVector->VecData[i] = joint_cmds_(i);
-//          rml_in_->TargetVelocityVector->VecData[i] = 0.0;
-//          // set current state
-//          rml_in_->CurrentPositionVector->VecData[i] = joint_positions_(i);
-//          rml_in_->CurrentVelocityVector->VecData[i] = (*joint_handles_ptr_)[i].getVelocity();
-//          rml_in_->CurrentAccelerationVector->VecData[i] = 0.0;
-//      }
-//      // calc trajectory
-//      int result_value = rml_->RMLPosition(*rml_in_.get(),rml_out_.get(),rml_flags_);
-//      if (result_value < 0) {
-//          ROS_ERROR_STREAM(moveit_group_ << ": An error occured while calculating trajectory: " << result_value);
-//          return false;
-//      }
-//      if (result_value == ReflexxesAPI::RML_FINAL_STATE_REACHED) {
-//          ROS_INFO_STREAM(moveit_group_ << ": FINAL STATE REACHED!");
-//      }
-
-//      // write output to desired_joint_state_
-//      for (unsigned int i = 0; i < joint_handles_ptr_->size(); i++) {
-//          desired_joint_state_.position[i] = rml_out_->NewPositionVector->VecData[i];
-//          desired_joint_state_.velocity[i] = rml_out_->NewVelocityVector->VecData[i];
-//          desired_joint_state_.acceleration[i] = rml_out_->NewAccelerationVector->VecData[i];
-//      }
-
-////      if (cycle_counter < 10) {
-////          printf("-------------------------------------------------------\n");
-////          std::cout << moveit_group_ << std::endl;
-////          printf("General information:\n\n");
-
-////          printf("The execution time of the current trajectory is %.3lf seconds.\n", rml_out_->GetSynchronizationTime());
-
-////          if (rml_out_->IsTrajectoryPhaseSynchronized())
-////          {
-////              printf("The current trajectory is phase-synchronized.\n");
-////          }
-////          else
-////          {
-////              printf("The current trajectory is time-synchronized.\n");
-////          }
-////          if (rml_out_->WasACompleteComputationPerformedDuringTheLastCycle())
-////          {
-////              printf("The trajectory was computed during the last computation cycle.\n");
-////          }
-////          else
-////          {
-////              printf("The input values did not change, and a new computation of the trajectory parameters was not required.\n");
-////          }
-////          printf("-------------------------------------------------------\n");
-////          printf("New state of motion:\n\n");
-
-////          printf("New position/pose vector                  : ");
-////          for (unsigned int j = 0; j < joint_handles_ptr_->size(); j++)
-////          {
-////              printf("%10.3lf ", rml_out_->NewPositionVector->VecData[j]);
-////          }
-////          printf("\n");
-////          printf("New velocity vector                       : ");
-////          for (unsigned int j = 0; j < joint_handles_ptr_->size(); j++)
-////          {
-////              printf("%10.3lf ", rml_out_->NewVelocityVector->VecData[j]);
-////          }
-////          printf("\n");
-////          printf("New acceleration vector                   : ");
-////          for (unsigned int j = 0; j < joint_handles_ptr_->size(); j++)
-////          {
-////              printf("%10.3lf ", rml_out_->NewAccelerationVector->VecData[j]);
-////          }
-////          printf("\n");
-////          printf("-------------------------------------------------------\n");
-////          printf("Extremes of the current trajectory:\n");
-
-////          for (unsigned int i = 0; i < joint_handles_ptr_->size(); i++)
-////          {
-////              printf("\n");
-////              printf("Degree of freedom                         : %d\n", i);
-////              printf("Minimum position                          : %10.3lf\n", rml_out_->MinPosExtremaPositionVectorOnly->VecData[i]);
-////              printf("Time, at which the minimum will be reached: %10.3lf\n", rml_out_->MinExtremaTimesVector->VecData[i]);
-////              printf("Position/pose vector at this time         : ");
-////              for (unsigned int j = 0; j < joint_handles_ptr_->size(); j++)
-////              {
-////                  printf("%10.3lf ", rml_out_->MinPosExtremaPositionVectorArray[i]->VecData[j]);
-////              }
-////              printf("\n");
-////              printf("Velocity vector at this time              : ");
-////              for (unsigned int j = 0; j < joint_handles_ptr_->size(); j++)
-////              {
-////                  printf("%10.3lf ", rml_out_->MinPosExtremaVelocityVectorArray[i]->VecData[j]);
-////              }
-////              printf("\n");
-////              printf("Acceleration vector at this time          : ");
-////              for (unsigned int j = 0; j < joint_handles_ptr_->size(); j++)
-////              {
-////                  printf("%10.3lf ", rml_out_->MinPosExtremaAccelerationVectorArray[i]->VecData[j]);
-////              }
-////              printf("\n");
-////              printf("Maximum position                          : %10.3lf\n", rml_out_->MaxPosExtremaPositionVectorOnly->VecData[i]);
-////              printf("Time, at which the maximum will be reached: %10.3lf\n", rml_out_->MaxExtremaTimesVector->VecData[i]);
-////              printf("Position/pose vector at this time         : ");
-////              for (unsigned int j = 0; j < joint_handles_ptr_->size(); j++)
-////              {
-////                  printf("%10.3lf ", rml_out_->MaxPosExtremaPositionVectorArray[i]->VecData[j]);
-////              }
-////              printf("\n");
-////              printf("Velocity vector at this time              : ");
-////              for (unsigned int j = 0; j < joint_handles_ptr_->size(); j++)
-////              {
-////                  printf("%10.3lf ", rml_out_->MaxPosExtremaVelocityVectorArray[i]->VecData[j]);
-////              }
-////              printf("\n");
-////              printf("Acceleration vector at this time          : ");
-////              for (unsigned int j = 0; j < joint_handles_ptr_->size(); j++)
-////              {
-////                  printf("%10.3lf ", rml_out_->MaxPosExtremaAccelerationVectorArray[i]->VecData[j]);
-////              }
-////              printf("\n");
-////          }
-////          printf("-------------------------------------------------------\n");
-////      }
-
-////      cycle_counter++;
-//      return true;
-//  }
   std::string moveit_group_;
 
   std::vector<hardware_interface::VigirAtlasJointHandle>* joint_handles_ptr_;
@@ -490,12 +314,6 @@ private:
   JointState state_error_;
   VectorNd joint_positions_; // used to update ik controller
   VectorNd joint_cmds_;      // output of ik controller
-
-  // reflexxes
-//  boost::shared_ptr<ReflexxesAPI> rml_;
-//  boost::shared_ptr<RMLPositionInputParameters> rml_in_;
-//  boost::shared_ptr<RMLPositionOutputParameters> rml_out_;
-//  RMLPositionFlags rml_flags_;
 
   // vigir atlas joint interface adapter
   ::HardwareInterfaceAdapter<hardware_interface::VigirAtlasJointInterface, JointState> joint_if_adapter_;

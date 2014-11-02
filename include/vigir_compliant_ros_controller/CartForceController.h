@@ -25,7 +25,7 @@ namespace compliant_controller {
         Vector6d calcCorrectionVector(const Vector6d& xd, const Vector6d& xdotd, double step_size);
         bool calcTorques(const Vector6d& force, VectorNd& torques);
         VectorNd calcTorques(const Vector6d& force);
-        // for testing
+
         void getTipPose(KDL::Frame& pose);
     private:
         void calcCartError(const Vector6d& xd, const Vector6d& x, Vector6d& x_err) const;

@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   cmake_modules
   flor_utilities
   vigir_atlas_interfaces
-  reflexxes_type2
+  reflexxes
   dynamic_reconfigure
 )
 
@@ -107,6 +107,7 @@ set(HEADERS
     include/${PROJECT_NAME}/CustomTypes.h
     include/${PROJECT_NAME}/hardware_interface_adapter.h
     include/${PROJECT_NAME}/AdmittanceParamManager.h
+    include/${PROJECT_NAME}/TJacInvKinController.h
 )
 
 set(SOURCES
@@ -118,6 +119,7 @@ set(SOURCES
     src/ConversionHelper.cpp
     src/JointAdmittanceController.cpp
     src/AdmittanceParamManager.cpp
+    src/TJacInvKinController.cpp
 )
 
 ###################################
@@ -142,7 +144,7 @@ CATKIN_DEPENDS
  urdf
  moveit_core
  moveit_ros_planning
- reflexxes_type2
+ reflexxes
 #  DEPENDS system_lib
 )
 
