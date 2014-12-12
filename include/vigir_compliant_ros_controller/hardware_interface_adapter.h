@@ -15,9 +15,6 @@
 #include <vigir_compliant_ros_controller/CartVelController.h>
 #include <vigir_compliant_ros_controller/InvKinController.h>
 
-// atlas
-#include <vigir_atlas_interfaces/vigir_atlas_joint_iface_adapter.h>
-
 namespace compliant_controller {
 
 template <class HardwareInterface, class State>
@@ -234,89 +231,5 @@ private:
   compliant_controller::VectorNd joint_cmds_;
 };
 
-template <>
-class HardwareInterfaceAdapter<hardware_interface::VigirAtlasJointInterface, CartState> {
-public:
-  bool init(std::vector<std::string> segment_names, std::vector<hardware_interface::VigirAtlasJointHandle>& joint_handles, ros::NodeHandle& controller_nh)
-  {
-      // resize pre-allocated variables
-      joint_handles_ptr_ = &joint_handles;
-      joint_positions_.resize(joint_handles.size());
-      joint_cmds_.resize(joint_handles.size());
-      desired_joint_state_ = JointState(joint_handles.size());
-      state_error_ = JointState(joint_handles.size());
-
-      // init IK controller
-      if (!controller_nh.getParam("moveit_group", moveit_group_)) {
-        ROS_ERROR_STREAM("Couldn't find param 'moveit_group' in namespace " << controller_nh.getNamespace() << ".");
-        return false;
-      }
-
-      if (!inv_kin_controller_.init(moveit_group_)) { // add moveit group to config
-          return false;
-      }
-
-      // init vigir joint interface adapter
-      return joint_if_adapter_.init(joint_handles,controller_nh);
-  }
-
-  void starting(const ros::Time& time) {
-      joint_if_adapter_.starting(time);
-      for (unsigned int i = 0; i < joint_handles_ptr_->size(); i++) {
-          desired_joint_state_.position[i] = (*joint_handles_ptr_)[i].getPosition();
-          desired_joint_state_.velocity[i] = 0.0;
-          desired_joint_state_.acceleration[i] = 0.0;
-          joint_cmds_(i) = (*joint_handles_ptr_)[i].getPosition();
-      }
-  }
-  void stopping(const ros::Time& time) {joint_if_adapter_.stopping(time);}
-
-  void updateCommand(const ros::Time& time, const ros::Duration& period, const CartState& desired_state) {
-      for (unsigned int i = 0; i < joint_positions_.size(); i++) {
-          joint_positions_(i) = (*joint_handles_ptr_)[i].getPosition();
-      }
-      inv_kin_controller_.updateJointState(joint_positions_);
-      inv_kin_controller_.calcInvKin(desired_state.position, joint_cmds_);
-      for (unsigned int i = 0; i < joint_handles_ptr_->size(); i++) {
-          desired_joint_state_.position[i] = joint_cmds_(i);
-          desired_joint_state_.velocity[i] = 0.0;
-          desired_joint_state_.acceleration[i] = 0.0;
-      }
-      for (unsigned int i = 0; i < joint_cmds_.size(); i++) {
-          state_error_.position[i] = desired_joint_state_.position[i] - joint_positions_(i);
-          state_error_.velocity[i] = desired_joint_state_.velocity[i] - (*joint_handles_ptr_)[i].getVelocity();
-          state_error_.acceleration[i] = desired_joint_state_.acceleration[i] - 0;
-      }
-      joint_if_adapter_.updateCommand(time, period, desired_joint_state_, state_error_);
-  }
-
-  Transform getTipPose() {
-      for (unsigned int i = 0; i < joint_positions_.size(); i++) {
-          joint_positions_(i) = (*joint_handles_ptr_)[i].getPosition();
-      }
-      inv_kin_controller_.updateJointState(joint_positions_);
-
-      Eigen::Affine3d pose;
-      inv_kin_controller_.getTipTransform(pose);
-      Transform transform(pose.rotation(), pose.translation());
-      return transform;
-  }
-
-
-private:
-  std::string moveit_group_;
-
-  std::vector<hardware_interface::VigirAtlasJointHandle>* joint_handles_ptr_;
-  compliant_controller::InvKinController inv_kin_controller_;
-
-  //pre-allocated variables
-  JointState desired_joint_state_;
-  JointState state_error_;
-  VectorNd joint_positions_; // used to update ik controller
-  VectorNd joint_cmds_;      // output of ik controller
-
-  // vigir atlas joint interface adapter
-  ::HardwareInterfaceAdapter<hardware_interface::VigirAtlasJointInterface, JointState> joint_if_adapter_;
-};
 }
 #endif

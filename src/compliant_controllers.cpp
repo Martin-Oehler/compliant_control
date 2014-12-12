@@ -31,45 +31,22 @@
 
 // Project
 #include <vigir_compliant_ros_controller/compliant_controller.h>
-#include <vigir_atlas_interfaces/vigir_atlas_joint_iface.h>
 
-namespace position_controllers
-{
-  /**
-   * \brief Joint trajectory controller that represents trajectory segments as <b>quintic splines</b> and sends
-   * commands to a \b position interface.
-   */
+namespace position_controllers {
   typedef compliant_controller::CompliantController<hardware_interface::PositionJointInterface>
           CompliantController;
 }
 
-namespace velocity_controllers
-{
-  /**
-   * \brief Joint trajectory controller that represents trajectory segments as <b>quintic splines</b> and sends
-   * commands to a \b velocity interface.
-   */
+namespace velocity_controllers {
   typedef compliant_controller::CompliantController<hardware_interface::VelocityJointInterface>
           CompliantController;
 }
 
-namespace effort_controllers
-{
-  /**
-   * \brief Joint trajectory controller that represents trajectory segments as <b>quintic splines</b> and sends
-   * commands to an \b effort interface.
-   */
+namespace effort_controllers {
   typedef compliant_controller::CompliantController<hardware_interface::EffortJointInterface>
-          CompliantController;
-}
-
-namespace atlas_controllers
-{
-  typedef compliant_controller::CompliantController<hardware_interface::VigirAtlasJointInterface>
           CompliantController;
 }
 
 PLUGINLIB_EXPORT_CLASS(position_controllers::CompliantController, controller_interface::ControllerBase)
 PLUGINLIB_EXPORT_CLASS(velocity_controllers::CompliantController, controller_interface::ControllerBase)
 PLUGINLIB_EXPORT_CLASS(effort_controllers::CompliantController,   controller_interface::ControllerBase)
-PLUGINLIB_EXPORT_CLASS(atlas_controllers::CompliantController,   controller_interface::ControllerBase)

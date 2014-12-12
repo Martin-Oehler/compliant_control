@@ -17,7 +17,6 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_ros_planning
   cmake_modules
   flor_utilities
-  vigir_atlas_interfaces
   reflexxes
   dynamic_reconfigure
 )

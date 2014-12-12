@@ -21,11 +21,4 @@
     </description>
   </class>
 
-  <class name="atlas_controllers/CompliantController"
-         type="atlas_controllers::CompliantController"
-         base_class_type="controller_interface::ControllerBase">
-    <description>
-    </description>
-  </class>
-
 </library>

@@ -52,7 +52,6 @@
   <build_depend>moveit_ros_planning</build_depend>
   <build_depend>cmake_modules</build_depend>
   <build_depend>flor_utilities</build_depend>
-  <build_depend>vigir_atlas_interfaces</build_depend>
   <build_depend>reflexxes</build_depend>
   <build_depend>dynamic_reconfigure</build_depend>
 
