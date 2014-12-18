@@ -155,6 +155,7 @@ private:
 
   // additional hardware interfaces
   hardware_interface::ForceTorqueSensorHandle force_torque_sensor_handle_;
+  bool ft_interface_found_;
 
 };
 

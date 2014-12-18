@@ -192,17 +192,22 @@ update(const ros::Time& time, const ros::Duration& period) {
 template <class HardwareInterface>
 Vector6d CompliantController<HardwareInterface>::
 readFTSensor() {
-    const double* force = force_torque_sensor_handle_.getForce();
-    const double* torque = force_torque_sensor_handle_.getTorque();
-    Vector6d force_torque;
-    for (unsigned int i = 0; i < 3; i++) {
-        force_torque(i) = *(force+i);
-        force_torque(i+3) = *(torque+i);
+    if (ft_interface_found_) {
+        const double* force = force_torque_sensor_handle_.getForce();
+        const double* torque = force_torque_sensor_handle_.getTorque();
+        Vector6d force_torque;
+        for (unsigned int i = 0; i < 3; i++) {
+            force_torque(i) = *(force+i);
+            force_torque(i+3) = *(torque+i);
+        }
+        Matrix3d rot_base_tip = hw_iface_adapter_.getTipPose().rotation;
+        force_torque.block<3,1>(0,0) = rot_base_tip * force_torque.block<3,1>(0,0).eval();
+        force_torque.block<3,1>(3,0) = rot_base_tip * force_torque.block<3,1>(3,0).eval();
+        return force_torque;
+    } else {
+        return Vector6d::Zero();
     }
-    Matrix3d rot_base_tip = hw_iface_adapter_.getTipPose().rotation;
-    force_torque.block<3,1>(0,0) = rot_base_tip * force_torque.block<3,1>(0,0).eval();
-    force_torque.block<3,1>(3,0) = rot_base_tip * force_torque.block<3,1>(3,0).eval();
-    return force_torque;
+
 }
 
 template <class HardwareInterface>
@@ -225,8 +230,7 @@ initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros
 
   // get a pointer to the hardware interface
   HardwareInterface* hw = robot_hw->get<HardwareInterface>();
-  if (!hw)
-  {
+  if (!hw) {
       ROS_ERROR_STREAM("This controller requires a hardware interface of type " << hardware_interface::internal::demangledTypeName<HardwareInterface>() << ".");
       return false;
   }
@@ -239,19 +243,23 @@ initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros
   hardware_interface::ForceTorqueSensorInterface * force_torque_sensor_interface = robot_hw->get<hardware_interface::ForceTorqueSensorInterface >();
   if (!force_torque_sensor_interface){
     ROS_ERROR("Unable to retrieve ForceTorqueSensorInterface for compliant controller!");
-    return false;
+    ROS_ERROR("Compliant behaviour deactivated!");
+    ft_interface_found_ = false;
+  } else {
+    ft_interface_found_ = true;
+
+    // Get the name of the FT sensor to use from the parameter server
+    std::string ft_sensor_name = "ft_sensor";
+    controller_nh.getParam("ft_sensor_name", ft_sensor_name);
+    // Query the interface for the selected FT sensor
+    try {
+        force_torque_sensor_handle_ = force_torque_sensor_interface->getHandle(ft_sensor_name);
+    } catch (hardware_interface::HardwareInterfaceException e) {
+        ROS_ERROR_STREAM("Couldn't get handle for f/t sensor: " << ft_sensor_name << ". " << e.what());
+        return false;
+    }
+    ROS_INFO("Using force torque sensor: %s for compliant controller %s", ft_sensor_name.c_str(), getLeafNamespace(controller_nh_).c_str());
   }
-  // Get the name of the FT sensor to use from the parameter server
-  std::string ft_sensor_name = "ft_sensor";
-  controller_nh.getParam("ft_sensor_name", ft_sensor_name);
-  // Query the interface for the selected FT sensor
-  try {
-      force_torque_sensor_handle_ = force_torque_sensor_interface->getHandle(ft_sensor_name);
-  } catch (hardware_interface::HardwareInterfaceException e) {
-      ROS_ERROR_STREAM("Couldn't get handle for f/t sensor: " << ft_sensor_name << ". " << e.what());
-      return false;
-  }
-  ROS_INFO("Using force torque sensor: %s for compliant controller %s", ft_sensor_name.c_str(), getLeafNamespace(controller_nh_).c_str());
 
   // init controller
   hw->clearClaims();
