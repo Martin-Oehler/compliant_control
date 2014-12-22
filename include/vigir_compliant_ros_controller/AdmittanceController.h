@@ -12,10 +12,14 @@ namespace compliant_controller {
         void stopping();
         void update(const Vector6d&x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size);
         void activate(bool active);
+        bool isActive();
         // Setters and getters
         void setInertia(double inertia);
+        //double getInertia();
         void setDamping(double damping);
+        //double getDamping();
         void setStiffness(double stiffness);
+        //double getStiffness();
     private:
         bool active_;
         Eigen::Matrix<double, 12, 1> f(const Vector6d &f_ext);

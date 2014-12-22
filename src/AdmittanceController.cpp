@@ -46,7 +46,7 @@ namespace compliant_controller {
 
     void AdmittanceController::update(const Vector6d &x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size) {
         if (!active_) {
-            e_ = e_ + step_size * f(Vector6d::Zero()); // use zero force if deactivated
+            e_ = Eigen::Matrix<double, 12, 1>::Zero(); // error = 0 if deactivated
         } else {
             e_ = e_ + step_size * f(f_ext);                // e_(k+1) = e_k + h*f(e_k, f_ext)
         }
@@ -58,6 +58,10 @@ namespace compliant_controller {
     // Setters and getters
     void AdmittanceController::activate(bool active) {
         active_ = active;
+    }
+
+    bool AdmittanceController::isActive() {
+        return active_;
     }
 
     void AdmittanceController::setInertia(double inertia) {

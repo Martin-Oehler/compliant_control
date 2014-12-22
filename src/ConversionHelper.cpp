@@ -93,4 +93,19 @@ namespace compliant_controller {
                                  0,                     0,                     0,         1;
     }
 
+  void ConversionHelper::rotToQuatd(const Matrix3d& rot, Quatd& quat) {
+      KDL::Rotation kdl_rot;
+      for (unsigned int i = 0; i < 3; i++) {
+          for (unsigned int j = 0; j < 3; j++) {
+              kdl_rot(i, j) = rot(i, j);
+          }
+      }
+      double x, y, z, w;
+      kdl_rot.GetQuaternion(x, y, z, w);
+      quat.x() = x;
+      quat.y() = y;
+      quat.z() = z;
+      quat.w() = w;
+  }
+
 }

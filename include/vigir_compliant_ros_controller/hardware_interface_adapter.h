@@ -236,15 +236,16 @@ private:
 template <>
 class HardwareInterfaceAdapter<hardware_interface::EffortJointInterface, compliant_controller::CartState> {
 public:
-  bool init(std::vector<std::string> segment_names, std::vector<hardware_interface::JointHandle>& joint_handles, ros::NodeHandle& controller_nh)
-  {
+  bool init(std::vector<std::string> segment_names, std::vector<hardware_interface::JointHandle>& joint_handles, ros::NodeHandle& controller_nh) {
       // resize pre-allocated variables
       joint_handles_ptr_ = &joint_handles;
       joint_positions_.resize(joint_handles.size());
       joint_position_cmds_.resize(joint_handles.size());
       joint_cmds_ = compliant_controller::JointState(joint_handles.size());
+      joint_error_ = compliant_controller::JointState(joint_handles.size());
       std::fill(joint_cmds_.velocity.begin(), joint_cmds_.velocity.end(),0);
       std::fill(joint_cmds_.acceleration.begin(), joint_cmds_.acceleration.end(),0);
+
       // init IK
       std::string moveit_group;
       if (!controller_nh.getParam("moveit_group", moveit_group)) {
@@ -258,31 +259,52 @@ public:
       if (!jnt_pos_to_effort_hwi.init(joint_handles,controller_nh)) {
           return false;
       }
+      ROS_INFO_STREAM("Initialization of hardware interface adapter successful!");
     return true;
   }
 
   void starting(const ros::Time& time) {
       jnt_pos_to_effort_hwi.starting(time);
+
+      // initialise desired position to current position
+      for (unsigned int i = 0; i < joint_handles_ptr_->size(); i++) {
+          joint_position_cmds_(i) = (*joint_handles_ptr_)[i].getPosition();
+      }
+      ROS_INFO_STREAM("Hardware Interface Adapter started successfully.");
   }
   void stopping(const ros::Time& time) {
       jnt_pos_to_effort_hwi.stopping(time);
   }
 
   void updateCommand(const ros::Time& time, const ros::Duration& period, const compliant_controller::CartState& desired_state) {
+      // Read current joint positions
       for (unsigned int i = 0; i < joint_positions_.size(); i++) {
           joint_positions_(i) = (*joint_handles_ptr_)[i].getPosition();
       }
+
+      // run inverse kinematics
       inv_kin_controller_.updateJointState(joint_positions_);
       inv_kin_controller_.calcInvKin(desired_state.position, joint_position_cmds_);
+
+      // calculate state error
       for (unsigned int i = 0; i < joint_position_cmds_.size(); i++) {
-          //(*joint_handles_ptr_)[i].setCommand(joint_cmds_(i));
           joint_cmds_.position[i] = joint_position_cmds_(i);
+
           joint_error_.position[i] = joint_cmds_.position[i] - joint_positions_(i);
-          joint_error_.velocity[i] = -(*joint_handles_ptr_)[i].getVelocity();
+          joint_error_.velocity[i] = joint_cmds_.velocity[i] -(*joint_handles_ptr_)[i].getVelocity();
           joint_error_.acceleration[i] = 0;
       }
+
+      // calculate pid command and send to robot
       jnt_pos_to_effort_hwi.updateCommand(time,period,joint_cmds_, joint_error_);
 
+      // Debugging
+//      std::stringstream cmd_debug;
+//      for (unsigned int i = 0; i < joint_handles_ptr_->size(); i++) {
+//         cmd_debug << i << ":" << (*joint_handles_ptr_)[i].getCommand() << std::endl;
+//      }
+//     cmd_debug << std::endl;
+//     ROS_INFO_STREAM_THROTTLE(1,"Current commands: " << std::endl << cmd_debug.str());
   }
   Transform getTipPose() {
       for (unsigned int i = 0; i < joint_positions_.size(); i++) {

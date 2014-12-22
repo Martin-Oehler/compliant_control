@@ -59,20 +59,20 @@ namespace compliant_controller {
                                      joint_model_group_->getSolverInstance()->getTipFrame() << " failed. Error code: " << error_code.val);
             return false;
         }
-        // find maximum position change
-        double max_change = 0.0;
-        for (unsigned int i = 0; i < solution_.size(); i++) {
-            double change = std::abs(q_[i] - solution_[i]);
-            if (change > max_change) {
-                max_change = change;
-            }
-        }
+//        // find maximum position change
+//        double max_change = 0.0;
+//        for (unsigned int i = 0; i < solution_.size(); i++) {
+//            double change = std::abs(q_[i] - solution_[i]);
+//            if (change > max_change) {
+//                max_change = change;
+//            }
+//        }
 
-        // limit joint angle change
-        if (max_change*180 > 10*M_PI) {
-            ROS_ERROR_STREAM_THROTTLE(1, "Joint angle change too big: " << max_change*180/M_PI << " degree.");
-            return false;
-        }
+//        // limit joint angle change
+//        if (max_change*180 > 10*M_PI) {
+//            ROS_ERROR_STREAM_THROTTLE(1, "Joint angle change too big: " << max_change*180/M_PI << " degree.");
+//            return false;
+//        }
 
         // Check output vector size
         if (q_.size() != joint_positions.size()) {

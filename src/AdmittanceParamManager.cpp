@@ -31,7 +31,11 @@ void AdmittanceParamManager::setAdmittanceParams(bool active, double inertia, do
     controller_->setDamping(damping);
     controller_->setStiffness(stiffness);
 
-    ROS_INFO_STREAM("Admittance params changed to: " << inertia << ", " << damping << ", " << stiffness << ".");
+    if (active) {
+        ROS_INFO_STREAM("Admittance params changed to: Active with " << inertia << ", " << damping << ", " << stiffness << ".");
+    } else {
+        ROS_INFO_STREAM("Admittance params changed to: Not active");
+    }
 
     vigir_compliant_ros_controller::VigirAdmittanceParamsConfig config;
     config.inertia = inertia;
