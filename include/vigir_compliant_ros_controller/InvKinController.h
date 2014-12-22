@@ -8,7 +8,7 @@
 #include <moveit/robot_state/robot_state.h>
 
 #include <vigir_compliant_ros_controller/CustomTypes.h>
-#include <flor_utilities/timing.h>
+//#include <flor_utilities/timing.h>
 
 namespace compliant_controller {
 

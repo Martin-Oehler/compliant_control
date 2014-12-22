@@ -16,7 +16,6 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_core
   moveit_ros_planning
   cmake_modules
-  flor_utilities
   dynamic_reconfigure
 )
 
