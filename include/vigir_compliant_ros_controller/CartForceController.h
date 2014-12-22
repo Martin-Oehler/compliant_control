@@ -4,7 +4,6 @@
 #include <vigir_compliant_ros_controller/CustomTypes.h>
 #include <ros/ros.h>
 #include <boost/scoped_ptr.hpp>
-#include <atlas_msgs/AtlasState.h>
 
 #include <kdl/tree.hpp>
 #include <kdl/chain.hpp>
