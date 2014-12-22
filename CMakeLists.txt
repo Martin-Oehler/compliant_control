@@ -17,7 +17,6 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_ros_planning
   cmake_modules
   flor_utilities
-  reflexxes
   dynamic_reconfigure
 )
 
@@ -143,7 +142,6 @@ CATKIN_DEPENDS
  urdf
  moveit_core
  moveit_ros_planning
- reflexxes
 #  DEPENDS system_lib
 )
 
