@@ -141,6 +141,7 @@ CATKIN_DEPENDS
  urdf
  moveit_core
  moveit_ros_planning
+ dynamic_reconfigure
 #  DEPENDS system_lib
 )
 
