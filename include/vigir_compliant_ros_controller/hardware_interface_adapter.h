@@ -89,6 +89,8 @@ public:
         return transform;
     }
 
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 private:
     void updateJointState() {
         // update joint state
@@ -224,6 +226,8 @@ public:
       return transform;
   }
 
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 private:
   std::vector<hardware_interface::JointHandle>* joint_handles_ptr_;
   compliant_controller::InvKinController inv_kin_controller_;
@@ -319,6 +323,8 @@ public:
       transform.translation = pose.translation();
       return transform;
   }
+
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 private:
   std::vector<hardware_interface::JointHandle>* joint_handles_ptr_;

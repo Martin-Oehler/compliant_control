@@ -22,6 +22,8 @@ namespace compliant_controller {
         void updateJointState(VectorNd &q);
         void calcCompliantPosition(const VectorNd& q0, const Vector6d& fext, VectorNd& qd_out, VectorNd& qdotd_out);
         Vector3d getTipPosition(const VectorNd& q);
+
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     private:
         VectorNd getE1() const;
         VectorNd getE2() const;

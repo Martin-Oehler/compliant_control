@@ -111,6 +111,8 @@ public:
   bool initRequest(hardware_interface::RobotHW* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh,
                            std::set<std::string>& claimed_resources);
 
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 private:
   void poseCmdUpdate(const geometry_msgs::PoseStampedConstPtr& pose_ptr);
 

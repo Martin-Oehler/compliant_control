@@ -56,6 +56,8 @@ typedef struct CartState {
     }
     Vector6d position;
     Vector6d velocity;
+
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 } CartState;
 
 typedef struct JointState {
@@ -75,6 +77,8 @@ typedef struct Wrench
     Wrench() : force(0.0, 0.0, 0.0), torque(0.0, 0.0,0.0) {}
     Vector3d    force;
     Vector3d    torque;
+
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 } Wrench;
 
 typedef struct IMU
@@ -85,6 +89,8 @@ typedef struct IMU
     Vector3d angular_velocity;
     Vector3d linear_acceleration;
 
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 } IMU;
 
 typedef struct Pose
@@ -93,6 +99,8 @@ typedef struct Pose
 
     Vector3d position;
     Quatd    orientation;
+
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 } Pose;
 
 typedef struct Transform
@@ -110,6 +118,8 @@ typedef struct Transform
     {
         return rotation*rhs + translation;
     }
+
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 } Transform;
 

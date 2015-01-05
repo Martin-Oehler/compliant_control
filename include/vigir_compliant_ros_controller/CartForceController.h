@@ -26,6 +26,8 @@ namespace compliant_controller {
         VectorNd calcTorques(const Vector6d& force);
 
         void getTipPose(KDL::Frame& pose);
+
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     private:
         void calcCartError(const Vector6d& xd, const Vector6d& x, Vector6d& x_err) const;
         Matrix3d rotFromRPY(double roll, double pitch, double yaw) const;

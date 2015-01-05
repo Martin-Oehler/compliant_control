@@ -26,6 +26,8 @@ namespace compliant_controller {
         bool update(const Vector6d &command, VectorNd& velocities);
         void updatePosition(const VectorNd& position);
         void getTipPose(KDL::Frame& pose);
+
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     private:
         void setCommand(const Vector6d& command);
         bool initialized_;

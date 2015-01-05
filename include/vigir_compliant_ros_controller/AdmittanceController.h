@@ -20,6 +20,8 @@ namespace compliant_controller {
         //double getDamping();
         void setStiffness(double stiffness);
         //double getStiffness();
+
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     private:
         bool active_;
         Eigen::Matrix<double, 12, 1> f(const Vector6d &f_ext);
