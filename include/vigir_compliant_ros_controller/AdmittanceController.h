@@ -20,6 +20,7 @@ namespace compliant_controller {
         //double getDamping();
         void setStiffness(double stiffness);
         //double getStiffness();
+        void setDeadZone(double dead_zone);
 
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     private:
@@ -43,6 +44,8 @@ namespace compliant_controller {
         Vector6d Md;
         Vector6d Dd;
         Vector6d Kd;
+
+        double dead_zone_;
     };
 }
 

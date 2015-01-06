@@ -15,6 +15,7 @@ namespace compliant_controller {
         Dd = damping;
         Kd = stiffness;
         e_ = Eigen::Matrix<double, 12, 1>::Zero();
+        dead_zone_ = 0.1;
     }
 
     Vector6d AdmittanceController::getE1() const {
@@ -48,7 +49,16 @@ namespace compliant_controller {
         if (!active_) {
             e_ = Eigen::Matrix<double, 12, 1>::Zero(); // error = 0 if deactivated
         } else {
-            e_ = e_ + step_size * f(f_ext);                // e_(k+1) = e_k + h*f(e_k, f_ext)
+            Vector6d f_ext_zeroed;
+            // set force zero if value below dead zone threshold
+            for (unsigned int i = 0; i < f_ext.size(); i++) {
+                if (std::abs(f_ext(i)) < dead_zone_) {
+                    f_ext_zeroed(i) = 0;
+                } else {
+                    f_ext_zeroed(i) = f_ext(i);
+                }
+            }
+            e_ = e_ + step_size * f(f_ext_zeroed);                // e_(k+1) = e_k + h*f(e_k, f_ext)
         }
         xd = x0 + getE1();                        // add the calculated position offset to our virtual set point
         xdotd = getE2();
@@ -74,5 +84,9 @@ namespace compliant_controller {
 
     void AdmittanceController::setStiffness(double stiffness) {
         Kd.setConstant(stiffness);
+    }
+
+    void AdmittanceController::setDeadZone(double dead_zone) {
+        dead_zone_ = dead_zone;
     }
 }
