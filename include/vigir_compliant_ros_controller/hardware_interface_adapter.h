@@ -199,7 +199,11 @@ public:
     return true;
   }
 
-  void starting(const ros::Time& time) {}
+  void starting(const ros::Time& time) {
+      for (unsigned int i = 0; i < joint_position_cmds_.size(); i++) {
+          joint_position_cmds_(i) = (*joint_handles_ptr_)[i].getPosition();
+      }
+  }
   void stopping(const ros::Time& time) {}
 
   void updateCommand(const ros::Time& time, const ros::Duration& period, const compliant_controller::CartState& desired_state) {

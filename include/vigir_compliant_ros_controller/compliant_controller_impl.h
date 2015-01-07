@@ -279,6 +279,9 @@ poseCmdUpdate(const geometry_msgs::PoseStampedConstPtr& pose_ptr) {
     kdl_pose.p = KDL::Vector(pose_ptr->pose.position.x, pose_ptr->pose.position.y, pose_ptr->pose.position.z);
     kdl_pose.M = KDL::Rotation::Quaternion(pose_ptr->pose.orientation.x, pose_ptr->pose.orientation.y, pose_ptr->pose.orientation.z, pose_ptr->pose.orientation.w);
     ConversionHelper::kdlToEigen(kdl_pose, state_cmd_.position);
+//    if (pose_ptr->header.frame_id.compare(segment_names_[segment_names_.size()-1]) != 0) {
+//        ROS_WARN_STREAM("Target pose frame '" << pose_ptr->header.frame_id << "' doesn't match robot tip frame '" << segment_names_[segment_names_.size()-1] << "'.");
+//    }
 }
 
 template <class HardwareInterface>
