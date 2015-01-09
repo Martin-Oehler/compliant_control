@@ -2,6 +2,8 @@
 #define ADMITTANCE_CONTROLLER_H
 
 #include <vigir_compliant_ros_controller/CustomTypes.h>
+#include <ros/ros.h>
+#include <geometry_msgs/PoseStamped.h>
 
 namespace compliant_controller {
     class AdmittanceController {
@@ -10,7 +12,7 @@ namespace compliant_controller {
         void init(Vector6d& inertia, Vector6d& damping, Vector6d& stiffness);
         void starting();
         void stopping();
-        void update(const Vector6d&x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size);
+        void update(const ros::Time& time, const Vector6d&x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size);
         void activate(bool active);
         bool isActive();
         // Setters and getters
@@ -22,8 +24,15 @@ namespace compliant_controller {
         //double getStiffness();
         void setDeadZone(double dead_zone);
 
+        void activateStatePublishing(ros::NodeHandle& nh);
+
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     private:
+        void publishCompliantPose(const ros::Time& time, Vector6d& pose);
+        int seq_counter_;
+        ros::Publisher pose_publisher_;
+        bool publish_state_;
+
         bool active_;
         Eigen::Matrix<double, 12, 1> f(const Vector6d &f_ext);
         /**

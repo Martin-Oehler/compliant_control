@@ -196,6 +196,7 @@ public:
       if (!inv_kin_controller_.init(moveit_group)) { // add moveit group to config
           return false;
       }
+      inv_kin_controller_.activateStatePublishing(controller_nh);
     return true;
   }
 
@@ -211,7 +212,7 @@ public:
           joint_positions_(i) = (*joint_handles_ptr_)[i].getPosition();
       }
       inv_kin_controller_.updateJointState(joint_positions_);
-      inv_kin_controller_.calcInvKin(desired_state.position, joint_position_cmds_);
+      inv_kin_controller_.calcInvKin(time, desired_state.position, joint_position_cmds_);
       for (unsigned int i = 0; i < joint_position_cmds_.size(); i++) {
           (*joint_handles_ptr_)[i].setCommand(joint_position_cmds_(i));
       }
@@ -267,6 +268,7 @@ public:
       if (!jnt_pos_to_effort_hwi.init(joint_handles,controller_nh)) {
           return false;
       }
+      inv_kin_controller_.activateStatePublishing(controller_nh);
       ROS_INFO_STREAM("Initialization of hardware interface adapter successful!");
     return true;
   }
@@ -292,7 +294,7 @@ public:
 
       // run inverse kinematics
       inv_kin_controller_.updateJointState(joint_positions_);
-      inv_kin_controller_.calcInvKin(desired_state.position, joint_position_cmds_);
+      inv_kin_controller_.calcInvKin(time, desired_state.position, joint_position_cmds_);
 
       // calculate state error
       for (unsigned int i = 0; i < joint_position_cmds_.size(); i++) {

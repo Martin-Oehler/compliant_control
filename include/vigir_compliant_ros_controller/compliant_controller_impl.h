@@ -159,6 +159,7 @@ init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controlle
 
   // admittance controller
   admittance_controller_.init(inertia_, damping_, stiffness_);
+  admittance_controller_.activateStatePublishing(controller_nh);
   // admittance param manager
   admittance_param_manager_.init(controller_nh);
 
@@ -183,7 +184,7 @@ update(const ros::Time& time, const ros::Duration& period) {
   time_data.uptime = time_data_.readFromRT()->uptime + period; // Update controller uptime
   time_data_.writeFromNonRT(time_data); // TODO: Grrr, we need a lock-free data structure here!
 
-  admittance_controller_.update(state_cmd_.position, readFTSensor(), desired_state_.position, desired_state_.velocity, period.toSec());
+  admittance_controller_.update(time, state_cmd_.position, readFTSensor(), desired_state_.position, desired_state_.velocity, period.toSec());
 
   //Write desired_state to hardware interface adapter
   hw_iface_adapter_.updateCommand(time_data.uptime, time_data.period,

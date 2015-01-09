@@ -6,6 +6,7 @@
 
 namespace compliant_controller {
     bool InvKinController::init(std::string group_name) {
+        publish_state_ = false;
 
         robot_model_loader_.reset(new robot_model_loader::RobotModelLoader());
         robot_model_ = robot_model_loader_->getModel();
@@ -47,7 +48,7 @@ namespace compliant_controller {
         return true;
     }
 
-    bool InvKinController::calcInvKin(const Vector6d& xd, VectorNd& joint_positions) {
+    bool InvKinController::calcInvKin(const ros::Time &time, const Vector6d& xd, VectorNd& joint_positions) {
         Eigen::Affine3d pose;
         ConversionHelper::eigenToEigen(xd, pose);
         geometry_msgs::Pose pose_msg;
@@ -94,6 +95,10 @@ namespace compliant_controller {
         for (unsigned int i = 0; i < solution_.size(); i++) {
             joint_positions(i) = solution_[i];
         }
+
+        if (publish_state_) {
+            publishState(time, joint_positions);
+        }
         return true;
     }
 
@@ -109,11 +114,31 @@ namespace compliant_controller {
     }
 
     bool InvKinController::getTipTransform(Eigen::Affine3d& tip_transform) {
-       // std::vector<std::string> tip_vec(1, joint_model_group_->getSolverInstance()->getTi);
         if (!joint_model_group_->getSolverInstance()->getPositionFK(joint_model_group_->getSolverInstance()->getTipFrames(), q_,poses_)) {
             ROS_ERROR_STREAM("Computing FK failed.");
             return false;
         }
         tf::poseMsgToEigen(poses_[0],tip_transform);
+    }
+
+    void InvKinController::activateStatePublishing(ros::NodeHandle& nh) {
+        joint_state_publisher_ = nh.advertise<sensor_msgs::JointState>("joint_cmd", 1000);
+        publish_state_ = true;
+        seq_counter_ = 0;
+    }
+
+    void InvKinController::publishState(const ros::Time& time, const VectorNd& state) {
+        sensor_msgs::JointState state_msg;
+        state_msg.header.stamp.fromNSec(time.toNSec());
+        state_msg.header.seq = seq_counter_; seq_counter_++;
+        state_msg.position.resize(state.size());
+        state_msg.effort.resize(state.size());
+        state_msg.velocity.resize(state.size());
+        for (unsigned int i = 0; i < state.size(); i++) {
+            state_msg.position[i] = state(i);
+            state_msg.effort[i] = 0;
+            state_msg.velocity[i] = 0;
+        }
+        joint_state_publisher_.publish(state_msg);
     }
 }

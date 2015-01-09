@@ -8,6 +8,7 @@ namespace compliant_controller {
             Kd(i) = stiffness;
         }
         init(Md, Dd, Kd);
+        publish_state_ = false;
     }
 
     void AdmittanceController::init(Vector6d& inertia, Vector6d& damping, Vector6d& stiffness) {
@@ -45,7 +46,7 @@ namespace compliant_controller {
 
     }
 
-    void AdmittanceController::update(const Vector6d &x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size) {
+    void AdmittanceController::update(const ros::Time& time, const Vector6d &x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size) {
         if (!active_) {
             e_ = Eigen::Matrix<double, 12, 1>::Zero(); // error = 0 if deactivated
         } else {
@@ -62,6 +63,34 @@ namespace compliant_controller {
         }
         xd = x0 + getE1();                        // add the calculated position offset to our virtual set point
         xdotd = getE2();
+
+        if (publish_state_) {
+            publishCompliantPose(time, xd);
+        }
+    }
+
+    void AdmittanceController::activateStatePublishing(ros::NodeHandle& nh) {
+        pose_publisher_ = nh.advertise<geometry_msgs::PoseStamped>("compliant_pose", 1000);
+        publish_state_ = true;
+        seq_counter_ = 0;
+    }
+
+    void AdmittanceController::publishCompliantPose(const ros::Time &time, Vector6d& pose) {
+        geometry_msgs::PoseStamped pose_stamped;
+        pose_stamped.header.stamp.fromNSec(time.toNSec());
+        pose_stamped.header.seq = seq_counter_; seq_counter_++;
+        pose_stamped.header.frame_id = "utorso";
+
+        pose_stamped.pose.position.x = pose(0);
+        pose_stamped.pose.position.y = pose(1);
+        pose_stamped.pose.position.z = pose(2);
+
+        pose_stamped.pose.orientation.w = 1;
+        pose_stamped.pose.orientation.x = 0;
+        pose_stamped.pose.orientation.y = 0;
+        pose_stamped.pose.orientation.z = 0;
+
+        pose_publisher_.publish(pose_stamped);
     }
 
 
