@@ -59,19 +59,30 @@ namespace compliant_controller {
                                      joint_model_group_->getSolverInstance()->getTipFrame() << " failed. Error code: " << error_code.val);
             return false;
         }
+
+        //double limit = 10 * M_PI / 180;
+        double limit = 0.523; // 30°
+
         // find maximum position change
-        double max_change = 0.0;
+        double min_change_factor = 1;
+        double requested_change = 0;
         for (unsigned int i = 0; i < solution_.size(); i++) {
             double change = std::abs(q_[i] - solution_[i]);
-            if (change > max_change) {
-                max_change = change;
+            if (change != 0.0) {
+                double factor = limit/change;
+                if (factor < min_change_factor) {
+                    min_change_factor = factor;
+                    requested_change = change;
+                }
             }
         }
 
         // limit joint angle change
-        if (max_change*180 > 10*M_PI) {
-            ROS_ERROR_STREAM_THROTTLE(1, "Joint angle change too big: " << max_change*180/M_PI << " degree.");
-            return false;
+        if (min_change_factor < 1) {
+            for (unsigned int i = 0; i < solution_.size(); i++) {
+                solution_[i] = solution_[i] * min_change_factor;
+            }
+            ROS_WARN_STREAM_THROTTLE(1,"Joint angle change too big (" << requested_change << "). Limiting speed with factor: " << min_change_factor << ".");
         }
 
         // Check output vector size
