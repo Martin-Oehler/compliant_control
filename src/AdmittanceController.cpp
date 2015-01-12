@@ -77,7 +77,7 @@ namespace compliant_controller {
 
     void AdmittanceController::publishCompliantPose(const ros::Time &time, Vector6d& pose) {
         geometry_msgs::PoseStamped pose_stamped;
-        pose_stamped.header.stamp.fromNSec(time.toNSec());
+        pose_stamped.header.stamp = time;
         pose_stamped.header.seq = seq_counter_; seq_counter_++;
         pose_stamped.header.frame_id = "utorso";
 

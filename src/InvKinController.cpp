@@ -129,7 +129,7 @@ namespace compliant_controller {
 
     void InvKinController::publishState(const ros::Time& time, const VectorNd& state) {
         sensor_msgs::JointState state_msg;
-        state_msg.header.stamp.fromNSec(time.toNSec());
+        state_msg.header.stamp = time;
         state_msg.header.seq = seq_counter_; seq_counter_++;
         state_msg.position.resize(state.size());
         state_msg.effort.resize(state.size());
