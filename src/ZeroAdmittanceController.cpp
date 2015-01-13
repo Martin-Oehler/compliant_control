@@ -28,6 +28,7 @@ namespace compliant_controller {
         active_ = false;
         first_update_ = true;
         force_integral_ = Vector6d::Zero();
+        prev_force_ = Vector6d::Zero();
     }
 
     void ZeroAdmittanceController::stopping() {
@@ -58,9 +59,9 @@ namespace compliant_controller {
             // Calculate derivative of force
             Vector6d fdot = (prev_force_ - f_ext_zeroed) / step_size;
             prev_force_ = f_ext_zeroed;
-            Vector6d xdotd = Kd.asDiagonal() * f_ext_zeroed + force_integral_ + Md.asDiagonal() * fdot;
+            xdotd = Kd.asDiagonal() * f_ext_zeroed + force_integral_ + Md.asDiagonal() * fdot;
             xd_ = xd_ + step_size * xdotd;
-
+            xd = xd_;
         }
     }
 
