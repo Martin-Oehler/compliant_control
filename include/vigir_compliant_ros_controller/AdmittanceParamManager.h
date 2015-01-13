@@ -16,7 +16,7 @@ namespace compliant_controller {
         void init(ros::NodeHandle& nh);
         void dynamicReconfigCB(vigir_compliant_ros_controller::VigirAdmittanceParamsConfig &config, uint32_t level);
         void updateDynamicReconfig(vigir_compliant_ros_controller::VigirAdmittanceParamsConfig &config);
-        void setAdmittanceParams(bool active, double inertia, double damping, double stiffness, double dead_zone);
+        void setParams(vigir_compliant_ros_controller::VigirAdmittanceParamsConfig &config);
     private:
         AdmittanceController* controller_;
 

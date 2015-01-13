@@ -6,6 +6,11 @@ AdmittanceParamManager::AdmittanceParamManager(AdmittanceController& controller)
     controller_ = &controller;
 }
 
+/**
+ * @brief AdmittanceParamManager::init
+ * Initializes this class by starting the reconfig server.
+ * @param nh NodeHandle in which the reconfig server is running
+ */
 void AdmittanceParamManager::init(ros::NodeHandle& nh) {
     // Set up dynamic reconfigure for admittance params
     ros::NodeHandle nh_params(nh, "admittance_params/");
@@ -15,36 +20,50 @@ void AdmittanceParamManager::init(ros::NodeHandle& nh) {
     param_reconfig_server_->setCallback(param_reconfig_callback_);
 }
 
+/**
+ * @brief AdmittanceParamManager::dynamicReconfigCB
+ * Callback of reconfig server.
+ * @param config Contains the settings made by the user.
+ * @param level
+ */
 void AdmittanceParamManager::dynamicReconfigCB(vigir_compliant_ros_controller::VigirAdmittanceParamsConfig &config, uint32_t level) {
-    setAdmittanceParams(config.active, config.inertia, config.damping, config.stiffness, config.dead_zone);
+    setParams(config);
 }
 
+/**
+ * @brief AdmittanceParamManager::setAdmittanceParams
+ * Sends changes of the admittance parameters to the controller.
+ * @param active
+ * @param inertia
+ * @param damping
+ * @param stiffness
+ * @param dead_zone
+ */
+void AdmittanceParamManager::setParams(vigir_compliant_ros_controller::VigirAdmittanceParamsConfig &config) {
+    controller_->activate(config.active);
+    controller_->setInertia(config.inertia);
+    controller_->setDamping(config.damping);
+    controller_->setStiffness(config.stiffness);
+    controller_->setDeadZone(config.dead_zone);
+    controller_->setMode(config.mode);
+
+    if (config.active) {
+        ROS_INFO_STREAM("Admittance params changed to: Active with " << config.inertia << ", " << config.damping << ", " << config.stiffness << ". Dead Zone: " << config.dead_zone << ", Mode: " << config.mode << ".");
+    } else {
+        ROS_INFO_STREAM("Admittance params changed to: Not active");
+    }
+    updateDynamicReconfig(config);
+}
+
+/**
+ * @brief AdmittanceParamManager::updateDynamicReconfig
+ * Sends updates back to the reconfig server.
+ * @param config Updated config.
+ */
 void AdmittanceParamManager::updateDynamicReconfig(vigir_compliant_ros_controller::VigirAdmittanceParamsConfig &config) {
     param_reconfig_mutex_.lock();
     param_reconfig_server_->updateConfig(config);
     param_reconfig_mutex_.unlock();
-}
-
-void AdmittanceParamManager::setAdmittanceParams(bool active, double inertia, double damping, double stiffness, double dead_zone) {
-    controller_->activate(active);
-    controller_->setInertia(inertia);
-    controller_->setDamping(damping);
-    controller_->setStiffness(stiffness);
-    controller_->setDeadZone(dead_zone);
-
-    if (active) {
-        ROS_INFO_STREAM("Admittance params changed to: Active with " << inertia << ", " << damping << ", " << stiffness << ". Dead Zone: " << dead_zone << ".");
-    } else {
-        ROS_INFO_STREAM("Admittance params changed to: Not active");
-    }
-
-    vigir_compliant_ros_controller::VigirAdmittanceParamsConfig config;
-    config.inertia = inertia;
-    config.stiffness = stiffness;
-    config.damping = damping;
-    config.active = active;
-    config.dead_zone = dead_zone;
-    updateDynamicReconfig(config);
 }
 
 }

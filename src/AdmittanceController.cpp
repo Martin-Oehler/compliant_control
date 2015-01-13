@@ -1,68 +1,47 @@
 #include <vigir_compliant_ros_controller/AdmittanceController.h>
 
 namespace compliant_controller {
+    AdmittanceController::AdmittanceController()
+        : publish_state_(false),
+          mode_(0) {
+
+    }
+
     void AdmittanceController::init(double inertia, double damping, double stiffness) {
-        for (unsigned int i = 0; i < Md.size(); i++) {
-            Md(i) = inertia;
-            Dd(i) = damping;
-            Kd(i) = stiffness;
-        }
-        init(Md, Dd, Kd);
-        publish_state_ = false;
+        bound_addm_controller_.init(inertia, damping, stiffness);
+        zero_addm_controller_.init(inertia, damping, stiffness);
     }
 
-    void AdmittanceController::init(Vector6d& inertia, Vector6d& damping, Vector6d& stiffness) {
-        Md = inertia;
-        Dd = damping;
-        Kd = stiffness;
-        e_ = Eigen::Matrix<double, 12, 1>::Zero();
-        dead_zone_ = 0.1;
-    }
-
-    Vector6d AdmittanceController::getE1() const {
-        return e_.block<6,1>(0,0);
-    }
-
-    Vector6d AdmittanceController::getE2() const {
-        return e_.block<6,1>(6,0);
-    }
-
-    /**
-      Calculates the step function using the last step ek and the current external forces f_ext
-      */
-    Eigen::Matrix<double, 12, 1> AdmittanceController::f(const Vector6d& f_ext) {
-        Eigen::Matrix<double, 12, 1> f_out;
-        f_out.block<6,1>(0,0) = getE2();
-        f_out.block<6,1>(6,0) = Md.asDiagonal().inverse() * (f_ext - Dd.asDiagonal() * getE2() - Kd.asDiagonal() * getE1());
-        return f_out;
+    void AdmittanceController::init(const Vector6d &inertia, const Vector6d &damping, const Vector6d &stiffness) {
+        bound_addm_controller_.init(inertia, damping, stiffness);
+        zero_addm_controller_.init(inertia, damping, stiffness);
     }
 
     void AdmittanceController::starting() {
-        e_ = Eigen::Matrix<double, 12, 1>::Zero();
-        active_ = false;
+        if (mode_ == 0) {
+            bound_addm_controller_.starting();
+        }
+        else if (mode_ == 1) {
+            zero_addm_controller_.starting();
+        }
     }
 
     void AdmittanceController::stopping() {
-
+        if (mode_ == 0) {
+            bound_addm_controller_.stopping();
+        }
+        else if (mode_ == 1) {
+            zero_addm_controller_.stopping();
+        }
     }
 
     void AdmittanceController::update(const ros::Time& time, const Vector6d &x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size) {
-        if (!active_) {
-            e_ = Eigen::Matrix<double, 12, 1>::Zero(); // error = 0 if deactivated
-        } else {
-            Vector6d f_ext_zeroed;
-            // set force zero if value below dead zone threshold
-            for (unsigned int i = 0; i < f_ext.size(); i++) {
-                if (std::abs(f_ext(i)) < dead_zone_) {
-                    f_ext_zeroed(i) = 0;
-                } else {
-                    f_ext_zeroed(i) = f_ext(i);
-                }
-            }
-            e_ = e_ + step_size * f(f_ext_zeroed);                // e_(k+1) = e_k + h*f(e_k, f_ext)
+        if (mode_ == 0) {
+            bound_addm_controller_.update(x0, f_ext, xd, xdotd, step_size);
         }
-        xd = x0 + getE1();                        // add the calculated position offset to our virtual set point
-        xdotd = getE2();
+        else if (mode_ == 1) {
+            zero_addm_controller_.update(x0, f_ext, xd, xdotd, step_size);
+        }
 
         if (publish_state_) {
             publishCompliantPose(time, xd);
@@ -93,29 +72,42 @@ namespace compliant_controller {
         pose_publisher_.publish(pose_stamped);
     }
 
+    void AdmittanceController::setMode(unsigned int mode) {
+        if (mode_ != mode) {
+            stopping();
+            mode_ = mode;
+            starting();
+        }
+    }
+
 
     // Setters and getters
     void AdmittanceController::activate(bool active) {
-        active_ = active;
+        bound_addm_controller_.activate(active);
+        zero_addm_controller_.activate(active);
     }
 
     bool AdmittanceController::isActive() {
-        return active_;
+        return bound_addm_controller_.isActive();
     }
 
     void AdmittanceController::setInertia(double inertia) {
-        Md.setConstant(inertia);
+        bound_addm_controller_.setInertia(inertia);
+        zero_addm_controller_.setInertia(inertia);
     }
 
     void AdmittanceController::setDamping(double damping) {
-        Dd.setConstant(damping);
+        bound_addm_controller_.setDamping(damping);
+        zero_addm_controller_.setDamping(damping);
     }
 
     void AdmittanceController::setStiffness(double stiffness) {
-        Kd.setConstant(stiffness);
+        bound_addm_controller_.setStiffness(stiffness);
+        zero_addm_controller_.setStiffness(stiffness);
     }
 
     void AdmittanceController::setDeadZone(double dead_zone) {
-        dead_zone_ = dead_zone;
+        bound_addm_controller_.setDeadZone(dead_zone);
+        zero_addm_controller_.setDeadZone(dead_zone);
     }
 }

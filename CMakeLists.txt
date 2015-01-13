@@ -96,6 +96,8 @@ set(HEADERS
     include/${PROJECT_NAME}/compliant_controller.h
     include/${PROJECT_NAME}/compliant_controller_impl.h
     include/${PROJECT_NAME}/AdmittanceController.h
+    include/${PROJECT_NAME}/BoundAdmittanceController.h
+    include/${PROJECT_NAME}/ZeroAdmittanceController.h
     include/${PROJECT_NAME}/CartForceController.h
     include/${PROJECT_NAME}/CartVelController.h
     include/${PROJECT_NAME}/InvKinController.h
@@ -109,7 +111,9 @@ set(HEADERS
 
 set(SOURCES
     src/compliant_controllers.cpp
+    src/ZeroAdmittanceController.cpp
     src/AdmittanceController.cpp
+    src/BoundAdmittanceController.cpp
     src/CartForceController.cpp
     src/CartVelController.cpp
     src/InvKinController.cpp
