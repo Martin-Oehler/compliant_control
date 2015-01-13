@@ -54,7 +54,7 @@ namespace compliant_controller {
                 }
             }
             // Calculate integral of force
-            force_integral_ = force_integral_ + step_size * Dd.asDiagonal() * f_ext_zeroed;
+            force_integral_ = force_integral_ + step_size * (Dd.asDiagonal() * f_ext_zeroed);
 
             // Calculate derivative of force
             Vector6d fdot = (prev_force_ - f_ext_zeroed) / step_size;

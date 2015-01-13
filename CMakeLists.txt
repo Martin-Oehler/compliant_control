@@ -163,7 +163,6 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
-
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 #############
