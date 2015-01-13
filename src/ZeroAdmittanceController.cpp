@@ -63,7 +63,7 @@ namespace compliant_controller {
             force_integral_ = (force_integral_ + step_size * (Dd.asDiagonal() * f_ext_zeroed)).eval();
 
             // Calculate derivative of force
-            Vector6d fdot = (prev_force_ - f_ext_zeroed) / step_size;
+            Vector6d fdot = (f_ext_zeroed - prev_force_) / step_size;
             prev_force_ = f_ext_zeroed;
             Vector6d proportional = Kd.asDiagonal() * f_ext_zeroed;
             Vector6d derivative = Md.asDiagonal() * fdot;
