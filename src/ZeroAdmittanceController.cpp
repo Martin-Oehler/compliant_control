@@ -59,7 +59,13 @@ namespace compliant_controller {
             // Calculate derivative of force
             Vector6d fdot = (prev_force_ - f_ext_zeroed) / step_size;
             prev_force_ = f_ext_zeroed;
-            xdotd = Kd.asDiagonal() * f_ext_zeroed + force_integral_ + Md.asDiagonal() * fdot;
+            Vector6d proportional = Kd.asDiagonal() * f_ext_zeroed;
+            Vector6d derivative = Md.asDiagonal() * fdot;
+            xdotd = proportional + force_integral_ + derivative;
+
+            ROS_INFO_STREAM_THROTTLE(0.5, "Proportional part: " << proportional);
+            ROS_INFO_STREAM_THROTTLE(0.5, "Derivative part: " << derivative);
+            ROS_INFO_STREAM_THROTTLE(0.5, "Integral part: " << force_integral_);
             xd_ = xd_ + step_size * xdotd;
             xd = xd_;
         }

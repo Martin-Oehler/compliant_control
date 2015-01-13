@@ -2,6 +2,7 @@
 #define ZERO_ADMITTANCE_CONTROLLER_H
 
 #include <vigir_compliant_ros_controller/CustomTypes.h>
+#include <ros/ros.h>
 
 namespace compliant_controller {
     class ZeroAdmittanceController {
