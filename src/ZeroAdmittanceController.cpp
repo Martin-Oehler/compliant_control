@@ -53,8 +53,14 @@ namespace compliant_controller {
                     f_ext_zeroed(i) = f_ext(i);
                 }
             }
+
+            // for now, set torques to zero
+            for (unsigned int i = 3; i < 6; i++) {
+                f_ext_zeroed(i) = 0;
+            }
+
             // Calculate integral of force
-            force_integral_ = force_integral_ + step_size * (Dd.asDiagonal() * f_ext_zeroed);
+            force_integral_ = (force_integral_ + step_size * (Dd.asDiagonal() * f_ext_zeroed)).eval();
 
             // Calculate derivative of force
             Vector6d fdot = (prev_force_ - f_ext_zeroed) / step_size;
@@ -66,7 +72,7 @@ namespace compliant_controller {
             ROS_INFO_STREAM_THROTTLE(0.5, "Proportional part: " << proportional);
             ROS_INFO_STREAM_THROTTLE(0.5, "Derivative part: " << derivative);
             ROS_INFO_STREAM_THROTTLE(0.5, "Integral part: " << force_integral_);
-            xd_ = xd_ + step_size * xdotd;
+            xd_ = (xd_ + step_size * xdotd).eval();
             xd = xd_;
         }
     }
