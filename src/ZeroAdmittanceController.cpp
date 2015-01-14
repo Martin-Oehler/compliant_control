@@ -65,13 +65,23 @@ namespace compliant_controller {
             // Calculate derivative of force
             Vector6d fdot = (f_ext_zeroed - prev_force_) / step_size;
             prev_force_ = f_ext_zeroed;
-            Vector6d proportional = Kd.asDiagonal() * f_ext_zeroed;
             Vector6d derivative = Md.asDiagonal() * fdot;
+
+            // Calculate derivative part
+            Vector6d proportional = Kd.asDiagonal() * f_ext_zeroed;
+
+            // Calculate end-effector speed
             xdotd = proportional + force_integral_ + derivative;
 
-            ROS_INFO_STREAM_THROTTLE(0.5, "Proportional part: " << proportional);
-            ROS_INFO_STREAM_THROTTLE(0.5, "Derivative part: " << derivative);
-            ROS_INFO_STREAM_THROTTLE(0.5, "Integral part: " << force_integral_);
+            // enforce speed limit
+            double speed = xdotd.squaredNorm();
+            if (speed > speed_limit_) {
+                xdotd = (xdotd * speed_limit_ / speed).eval();
+            }
+
+//            ROS_INFO_STREAM_THROTTLE(0.5, "Proportional part: " << proportional);
+//            ROS_INFO_STREAM_THROTTLE(0.5, "Derivative part: " << derivative);
+//            ROS_INFO_STREAM_THROTTLE(0.5, "Integral part: " << force_integral_);
             xd_ = (xd_ + step_size * xdotd).eval();
             xd = xd_;
         }
@@ -100,5 +110,9 @@ namespace compliant_controller {
 
     void ZeroAdmittanceController::setDeadZone(double dead_zone) {
         dead_zone_ = dead_zone;
+    }
+
+    void ZeroAdmittanceController::setSpeedLimit(double speed_limit) {
+        speed_limit_ = speed_limit;
     }
 }

@@ -110,4 +110,9 @@ namespace compliant_controller {
         bound_addm_controller_.setDeadZone(dead_zone);
         zero_addm_controller_.setDeadZone(dead_zone);
     }
+
+    void AdmittanceController::setSpeedLimit(double speed_limit) {
+        bound_addm_controller_.setSpeedLimit(speed_limit);
+        zero_addm_controller_.setSpeedLimit(speed_limit);
+    }
 }

@@ -21,6 +21,7 @@ namespace compliant_controller {
         void setStiffness(double stiffness);
         //double getStiffness();
         void setDeadZone(double dead_zone);
+        void setSpeedLimit(double speed_limit);
 
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     private:
@@ -46,6 +47,7 @@ namespace compliant_controller {
         Vector6d Kd;
 
         double dead_zone_;
+        double speed_limit_;
     };
 }
 

@@ -17,6 +17,7 @@ namespace compliant_controller {
         void init(const Vector6d& inertia, const Vector6d& damping, const Vector6d& stiffness);
         void starting();
         void stopping();
+        // setNoSolutionFoundInLastCycle - tells controller to reset set-point to current position
         void update(const ros::Time& time, const Vector6d&x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size);
         void setMode(unsigned int mode);
         void activate(bool active);
@@ -29,6 +30,7 @@ namespace compliant_controller {
         void setStiffness(double stiffness);
         //double getStiffness();
         void setDeadZone(double dead_zone);
+        void setSpeedLimit(double speed_limit);
 
         void activateStatePublishing(ros::NodeHandle& nh);
     private:

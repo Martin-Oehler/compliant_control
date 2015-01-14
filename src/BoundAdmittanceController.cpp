@@ -33,6 +33,7 @@ namespace compliant_controller {
         Eigen::Matrix<double, 12, 1> f_out;
         f_out.block<6,1>(0,0) = getE2();
         f_out.block<6,1>(6,0) = Md.asDiagonal().inverse() * (f_ext - Dd.asDiagonal() * getE2() - Kd.asDiagonal() * getE1());
+
         return f_out;
     }
 
@@ -59,6 +60,12 @@ namespace compliant_controller {
                 }
             }
             e_ = e_ + step_size * f(f_ext_zeroed);                // e_(k+1) = e_k + h*f(e_k, f_ext)
+
+            // enforce speed limit
+            double speed = e_.block<6,1>(6,0).squaredNorm();
+            if (speed > speed_limit_) {
+                e_.block<6,1>(6,0) = (e_.block<6,1>(6,0) * speed_limit_ / speed).eval();
+            }
         }
         xd = x0 + getE1();                        // add the calculated position offset to our virtual set point
         xdotd = getE2();
@@ -87,5 +94,9 @@ namespace compliant_controller {
 
     void BoundAdmittanceController::setDeadZone(double dead_zone) {
         dead_zone_ = dead_zone;
+    }
+
+    void BoundAdmittanceController::setSpeedLimit(double speed_limit) {
+        speed_limit_ = speed_limit;
     }
 }
