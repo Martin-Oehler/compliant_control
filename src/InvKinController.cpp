@@ -61,8 +61,7 @@ namespace compliant_controller {
             return false;
         }
 
-        //double limit = 10 * M_PI / 180;
-        double limit = 0.523; // 30°
+        double limit = 20 * M_PI / 180;
 
         // find maximum position change
         double min_change_factor = 1;
