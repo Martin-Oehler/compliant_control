@@ -53,13 +53,13 @@ namespace compliant_controller {
             if (force_length < dead_zone_trans_) {
                 f_ext_zeroed.block<3,1>(0,0) = Vector3d::Zero();
             } else {
-                f_ext_zeroed.block<3,1>(0,0) = f_ext.block<3,1>(0,0);
+                f_ext_zeroed.block<3,1>(0,0) = (1-dead_zone_trans_ / force_length) * f_ext.block<3,1>(0,0);
             }
             double torque_length = f_ext.block<3,1>(3,0).squaredNorm();
             if (torque_length < dead_zone_rot_) {
                 f_ext_zeroed.block<3,1>(3,0) = Vector3d::Zero();
             } else {
-                f_ext_zeroed.block<3,1>(3,0) = f_ext.block<3,1>(3,0);
+                f_ext_zeroed.block<3,1>(3,0) = (1-dead_zone_rot_ / torque_length) * f_ext.block<3,1>(3,0);;
             }
 
             // for now, set torques to zero
