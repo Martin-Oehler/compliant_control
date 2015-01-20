@@ -15,7 +15,10 @@ namespace compliant_controller {
         Dd = damping;
         Kd = stiffness;
         e_ = Eigen::Matrix<double, 12, 1>::Zero();
-        dead_zone_ = 0.1;
+        dead_zone_trans_ = 0.1;
+        dead_zone_rot_ = 0.1;
+        speed_limit_rot_ = 0.1;
+        speed_limit_trans_ = 0.1;
     }
 
     Vector6d BoundAdmittanceController::getE1() const {
@@ -52,19 +55,34 @@ namespace compliant_controller {
         } else {
             Vector6d f_ext_zeroed;
             // set force zero if value below dead zone threshold
-            for (unsigned int i = 0; i < f_ext.size(); i++) {
-                if (std::abs(f_ext(i)) < dead_zone_) {
-                    f_ext_zeroed(i) = 0;
-                } else {
-                    f_ext_zeroed(i) = f_ext(i);
-                }
+            double force_length = f_ext.block<3,1>(0,0).squaredNorm();
+            if (force_length < dead_zone_trans_) {
+                f_ext_zeroed.block<3,1>(0,0) = Vector3d::Zero();
+            } else {
+                f_ext_zeroed.block<3,1>(0,0) = f_ext.block<3,1>(0,0);
             }
+            double torque_length = f_ext.block<3,1>(3,0).squaredNorm();
+            if (torque_length < dead_zone_rot_) {
+                f_ext_zeroed.block<3,1>(3,0) = Vector3d::Zero();
+            } else {
+                f_ext_zeroed.block<3,1>(3,0) = f_ext.block<3,1>(3,0);
+            }
+
+            // for now, set torques to zero
+            for (unsigned int i = 3; i < 6; i++) {
+                f_ext_zeroed(i) = 0;
+            }
+
             e_ = e_ + step_size * f(f_ext_zeroed);                // e_(k+1) = e_k + h*f(e_k, f_ext)
 
             // enforce speed limit
-            double speed = e_.block<6,1>(6,0).squaredNorm();
-            if (speed > speed_limit_) {
-                e_.block<6,1>(6,0) = (e_.block<6,1>(6,0) * speed_limit_ / speed).eval();
+            double trans_speed = e_.block<3,1>(6,0).squaredNorm();
+            if (trans_speed > speed_limit_trans_) {
+                e_.block<3,1>(6,0) = (e_.block<3,1>(6,0) * speed_limit_trans_ / trans_speed).eval();
+            }
+            double rot_speed = e_.block<3,1>(9,0).squaredNorm();
+            if (rot_speed > speed_limit_rot_) {
+                e_.block<3,1>(9,0) = (e_.block<3,1>(9,0) * speed_limit_rot_ / rot_speed).eval();
             }
         }
         xd = x0 + getE1();                        // add the calculated position offset to our virtual set point
@@ -92,11 +110,19 @@ namespace compliant_controller {
         Kd.setConstant(stiffness);
     }
 
-    void BoundAdmittanceController::setDeadZone(double dead_zone) {
-        dead_zone_ = dead_zone;
+    void BoundAdmittanceController::setTransDeadZone(double dead_zone) {
+        dead_zone_trans_ = dead_zone;
     }
 
-    void BoundAdmittanceController::setSpeedLimit(double speed_limit) {
-        speed_limit_ = speed_limit;
+    void BoundAdmittanceController::setRotDeadZone(double dead_zone) {
+        dead_zone_rot_ = dead_zone;
+    }
+
+    void BoundAdmittanceController::setTransSpeedLimit(double speed_limit) {
+        speed_limit_trans_ = speed_limit;
+    }
+
+    void BoundAdmittanceController::setRotSpeedLimit(double speed_limit) {
+        speed_limit_rot_ = speed_limit;
     }
 }

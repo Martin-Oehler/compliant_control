@@ -20,8 +20,10 @@ namespace compliant_controller {
         //double getDamping();
         void setStiffness(double stiffness);
         //double getStiffness();
-        void setDeadZone(double dead_zone);
-        void setSpeedLimit(double speed_limit);
+        void setTransDeadZone(double dead_zone);
+        void setRotDeadZone(double dead_zone);
+        void setTransSpeedLimit(double speed_limit);
+        void setRotSpeedLimit(double speed_limit);
 
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     private:
@@ -46,8 +48,10 @@ namespace compliant_controller {
         Vector6d Dd;
         Vector6d Kd;
 
-        double dead_zone_;
-        double speed_limit_;
+        double dead_zone_trans_;
+        double dead_zone_rot_;
+        double speed_limit_trans_;
+        double speed_limit_rot_;
     };
 }
 

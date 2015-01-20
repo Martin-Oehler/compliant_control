@@ -106,13 +106,23 @@ namespace compliant_controller {
         zero_addm_controller_.setStiffness(stiffness);
     }
 
-    void AdmittanceController::setDeadZone(double dead_zone) {
-        bound_addm_controller_.setDeadZone(dead_zone);
-        zero_addm_controller_.setDeadZone(dead_zone);
+    void AdmittanceController::setTransDeadZone(double dead_zone) {
+        bound_addm_controller_.setTransDeadZone(dead_zone);
+        zero_addm_controller_.setTransDeadZone(dead_zone);
     }
 
-    void AdmittanceController::setSpeedLimit(double speed_limit) {
-        bound_addm_controller_.setSpeedLimit(speed_limit);
-        zero_addm_controller_.setSpeedLimit(speed_limit);
+    void AdmittanceController::setRotDeadZone(double dead_zone) {
+        bound_addm_controller_.setRotDeadZone(dead_zone);
+        zero_addm_controller_.setRotDeadZone(dead_zone);
+    }
+
+    void AdmittanceController::setTransSpeedLimit(double speed_limit) {
+        bound_addm_controller_.setTransSpeedLimit(speed_limit);
+        zero_addm_controller_.setTransSpeedLimit(speed_limit);
+    }
+
+    void AdmittanceController::setRotSpeedLimit(double speed_limit) {
+        bound_addm_controller_.setRotSpeedLimit(speed_limit);
+        zero_addm_controller_.setRotSpeedLimit(speed_limit);
     }
 }

@@ -44,12 +44,18 @@ void AdmittanceParamManager::setParams(vigir_compliant_ros_controller::VigirAdmi
     controller_->setInertia(config.inertia);
     controller_->setDamping(config.damping);
     controller_->setStiffness(config.stiffness);
-    controller_->setDeadZone(config.dead_zone);
+    controller_->setTransDeadZone(config.dead_zone_trans);
+    controller_->setRotDeadZone(config.dead_zone_rot);
     controller_->setMode(config.mode);
-    controller_->setSpeedLimit(config.speed_limit);
+    controller_->setTransSpeedLimit(config.speed_limit_trans);
+    controller_->setRotSpeedLimit(config.speed_limit_rot);
 
     if (config.active) {
-        ROS_INFO_STREAM("Admittance params changed to: Active with " << config.inertia << ", " << config.damping << ", " << config.stiffness << ". Dead Zone: " << config.dead_zone << ", Speed Limit: " << config.speed_limit << " Mode: " << config.mode << ".");
+        ROS_INFO_STREAM("Admittance params changed to: Active with "
+                        << config.inertia << ", " << config.damping << ", " << config.stiffness
+                        << ". Dead Zone: " << config.dead_zone_trans << " | " << config.dead_zone_rot
+                        << ", Speed Limit: " << config.speed_limit_trans << " | " << config.speed_limit_rot
+                        << " Mode: " << config.mode << ".");
     } else {
         ROS_INFO_STREAM("Admittance params changed to: Not active");
     }

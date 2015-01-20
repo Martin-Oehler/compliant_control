@@ -14,7 +14,10 @@ namespace compliant_controller {
         Md = inertia;
         Dd = damping;
         Kd = stiffness;
-        dead_zone_ = 0.1;
+        dead_zone_trans_ = 0.1;
+        dead_zone_rot_ = 0.1;
+        speed_limit_rot_ = 0.1;
+        speed_limit_trans_ = 0.1;
     }
 
     /**
@@ -46,12 +49,17 @@ namespace compliant_controller {
         } else {
             Vector6d f_ext_zeroed;
             // set force zero if value below dead zone threshold
-            for (unsigned int i = 0; i < f_ext.size(); i++) {
-                if (std::abs(f_ext(i)) < dead_zone_) {
-                    f_ext_zeroed(i) = 0;
-                } else {
-                    f_ext_zeroed(i) = f_ext(i);
-                }
+            double force_length = f_ext.block<3,1>(0,0).squaredNorm();
+            if (force_length < dead_zone_trans_) {
+                f_ext_zeroed.block<3,1>(0,0) = Vector3d::Zero();
+            } else {
+                f_ext_zeroed.block<3,1>(0,0) = f_ext.block<3,1>(0,0);
+            }
+            double torque_length = f_ext.block<3,1>(3,0).squaredNorm();
+            if (torque_length < dead_zone_rot_) {
+                f_ext_zeroed.block<3,1>(3,0) = Vector3d::Zero();
+            } else {
+                f_ext_zeroed.block<3,1>(3,0) = f_ext.block<3,1>(3,0);
             }
 
             // for now, set torques to zero
@@ -74,9 +82,13 @@ namespace compliant_controller {
             xdotd = proportional + force_integral_ + derivative;
 
             // enforce speed limit
-            double speed = xdotd.squaredNorm();
-            if (speed > speed_limit_) {
-                xdotd = (xdotd * speed_limit_ / speed).eval();
+            double trans_speed = xdotd.block<3,1>(0,0).squaredNorm();
+            if (trans_speed > speed_limit_trans_) {
+                xdotd.block<3,1>(0,0) = (xdotd.block<3,1>(0,0) * speed_limit_trans_ / trans_speed).eval();
+            }
+            double rot_speed = xdotd.block<3,1>(3,0).squaredNorm();
+            if (rot_speed > speed_limit_rot_) {
+                xdotd.block<3,1>(3,0) = (xdotd.block<3,1>(3,0) * speed_limit_rot_ / rot_speed).eval();
             }
 
 //            ROS_INFO_STREAM_THROTTLE(0.5, "Proportional part: " << proportional);
@@ -108,11 +120,19 @@ namespace compliant_controller {
         Kd.setConstant(stiffness);
     }
 
-    void ZeroAdmittanceController::setDeadZone(double dead_zone) {
-        dead_zone_ = dead_zone;
+    void ZeroAdmittanceController::setTransDeadZone(double dead_zone) {
+        dead_zone_trans_ = dead_zone;
     }
 
-    void ZeroAdmittanceController::setSpeedLimit(double speed_limit) {
-        speed_limit_ = speed_limit;
+    void ZeroAdmittanceController::setRotDeadZone(double dead_zone) {
+        dead_zone_rot_ = dead_zone;
+    }
+
+    void ZeroAdmittanceController::setTransSpeedLimit(double speed_limit) {
+        speed_limit_trans_ = speed_limit;
+    }
+
+    void ZeroAdmittanceController::setRotSpeedLimit(double speed_limit) {
+        speed_limit_rot_ = speed_limit;
     }
 }

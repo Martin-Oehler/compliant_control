@@ -29,8 +29,10 @@ namespace compliant_controller {
         //double getDamping();
         void setStiffness(double stiffness);
         //double getStiffness();
-        void setDeadZone(double dead_zone);
-        void setSpeedLimit(double speed_limit);
+        void setTransDeadZone(double dead_zone);
+        void setRotDeadZone(double dead_zone);
+        void setTransSpeedLimit(double speed_limit);
+        void setRotSpeedLimit(double speed_limit);
 
         void activateStatePublishing(ros::NodeHandle& nh);
     private:
