@@ -1,74 +1,128 @@
 #include <vigir_compliant_ros_controller/AdmittanceController.h>
 
 namespace compliant_controller {
+    AdmittanceController::AdmittanceController()
+        : publish_state_(false),
+          mode_(0) {
+
+    }
+
     void AdmittanceController::init(double inertia, double damping, double stiffness) {
-        for (unsigned int i = 0; i < Md.size(); i++) {
-            Md(i) = inertia;
-            Dd(i) = damping;
-            Kd(i) = stiffness;
-        }
-        init(Md, Dd, Kd);
+        bound_addm_controller_.init(inertia, damping, stiffness);
+        zero_addm_controller_.init(inertia, damping, stiffness);
     }
 
-    void AdmittanceController::init(Vector6d& inertia, Vector6d& damping, Vector6d& stiffness) {
-        Md = inertia;
-        Dd = damping;
-        Kd = stiffness;
-        e_ = Eigen::Matrix<double, 12, 1>::Zero();
-    }
-
-    Vector6d AdmittanceController::getE1() const {
-        return e_.block<6,1>(0,0);
-    }
-
-    Vector6d AdmittanceController::getE2() const {
-        return e_.block<6,1>(6,0);
-    }
-
-    /**
-      Calculates the step function using the last step ek and the current external forces f_ext
-      */
-    Eigen::Matrix<double, 12, 1> AdmittanceController::f(const Vector6d& f_ext) {
-        Eigen::Matrix<double, 12, 1> f_out;
-        f_out.block<6,1>(0,0) = getE2();
-        f_out.block<6,1>(6,0) = Md.asDiagonal().inverse() * (f_ext - Dd.asDiagonal() * getE2() - Kd.asDiagonal() * getE1());
-        return f_out;
+    void AdmittanceController::init(const Vector6d &inertia, const Vector6d &damping, const Vector6d &stiffness) {
+        bound_addm_controller_.init(inertia, damping, stiffness);
+        zero_addm_controller_.init(inertia, damping, stiffness);
     }
 
     void AdmittanceController::starting() {
-        e_ = Eigen::Matrix<double, 12, 1>::Zero();
-        active_ = false;
+        if (mode_ == 0) {
+            bound_addm_controller_.starting();
+        }
+        else if (mode_ == 1) {
+            zero_addm_controller_.starting();
+        }
     }
 
     void AdmittanceController::stopping() {
-
+        if (mode_ == 0) {
+            bound_addm_controller_.stopping();
+        }
+        else if (mode_ == 1) {
+            zero_addm_controller_.stopping();
+        }
     }
 
-    void AdmittanceController::update(const Vector6d &x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size) {
-        if (!active_) {
-            e_ = e_ + step_size * f(Vector6d::Zero()); // use zero force if deactivated
-        } else {
-            e_ = e_ + step_size * f(f_ext);                // e_(k+1) = e_k + h*f(e_k, f_ext)
+    void AdmittanceController::update(const ros::Time& time, const Vector6d &x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size) {
+        if (mode_ == 0) {
+            bound_addm_controller_.update(x0, f_ext, xd, xdotd, step_size);
         }
-        xd = x0 + getE1();                        // add the calculated position offset to our virtual set point
-        xdotd = getE2();
+        else if (mode_ == 1) {
+            zero_addm_controller_.update(x0, f_ext, xd, xdotd, step_size);
+        }
+
+        if (publish_state_) {
+            publishCompliantPose(time, xd);
+        }
+    }
+
+    void AdmittanceController::activateStatePublishing(ros::NodeHandle& nh) {
+        pose_publisher_ = nh.advertise<geometry_msgs::PoseStamped>("compliant_pose", 1000);
+        publish_state_ = true;
+        seq_counter_ = 0;
+    }
+
+    void AdmittanceController::publishCompliantPose(const ros::Time &time, Vector6d& pose) {
+        geometry_msgs::PoseStamped pose_stamped;
+        pose_stamped.header.stamp = time;
+        pose_stamped.header.seq = seq_counter_; seq_counter_++;
+        pose_stamped.header.frame_id = "utorso";
+
+        pose_stamped.pose.position.x = pose(0);
+        pose_stamped.pose.position.y = pose(1);
+        pose_stamped.pose.position.z = pose(2);
+
+        pose_stamped.pose.orientation.w = 1;
+        pose_stamped.pose.orientation.x = 0;
+        pose_stamped.pose.orientation.y = 0;
+        pose_stamped.pose.orientation.z = 0;
+
+        pose_publisher_.publish(pose_stamped);
+    }
+
+    void AdmittanceController::setMode(unsigned int mode) {
+        if (mode_ != mode) {
+            stopping();
+            mode_ = mode;
+            starting();
+        }
     }
 
 
     // Setters and getters
     void AdmittanceController::activate(bool active) {
-        active_ = active;
+        bound_addm_controller_.activate(active);
+        zero_addm_controller_.activate(active);
+    }
+
+    bool AdmittanceController::isActive() {
+        return bound_addm_controller_.isActive();
     }
 
     void AdmittanceController::setInertia(double inertia) {
-        Md.setConstant(inertia);
+        bound_addm_controller_.setInertia(inertia);
+        zero_addm_controller_.setInertia(inertia);
     }
 
     void AdmittanceController::setDamping(double damping) {
-        Dd.setConstant(damping);
+        bound_addm_controller_.setDamping(damping);
+        zero_addm_controller_.setDamping(damping);
     }
 
     void AdmittanceController::setStiffness(double stiffness) {
-        Kd.setConstant(stiffness);
+        bound_addm_controller_.setStiffness(stiffness);
+        zero_addm_controller_.setStiffness(stiffness);
+    }
+
+    void AdmittanceController::setTransDeadZone(double dead_zone) {
+        bound_addm_controller_.setTransDeadZone(dead_zone);
+        zero_addm_controller_.setTransDeadZone(dead_zone);
+    }
+
+    void AdmittanceController::setRotDeadZone(double dead_zone) {
+        bound_addm_controller_.setRotDeadZone(dead_zone);
+        zero_addm_controller_.setRotDeadZone(dead_zone);
+    }
+
+    void AdmittanceController::setTransSpeedLimit(double speed_limit) {
+        bound_addm_controller_.setTransSpeedLimit(speed_limit);
+        zero_addm_controller_.setTransSpeedLimit(speed_limit);
+    }
+
+    void AdmittanceController::setRotSpeedLimit(double speed_limit) {
+        bound_addm_controller_.setRotSpeedLimit(speed_limit);
+        zero_addm_controller_.setRotSpeedLimit(speed_limit);
     }
 }

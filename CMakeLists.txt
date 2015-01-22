@@ -16,12 +16,10 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_core
   moveit_ros_planning
   cmake_modules
-  flor_utilities
-  reflexxes
   dynamic_reconfigure
 )
 
-# Using std::atomic in header
+# Activate c++11
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
 
 generate_dynamic_reconfigure_options(
@@ -30,8 +28,8 @@ generate_dynamic_reconfigure_options(
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-include_directories($ENV{ATLAS_ROBOT_INTERFACE}/include)
-link_directories($ENV{ATLAS_ROBOT_INTERFACE}/lib64)
+#include_directories($ENV{ATLAS_ROBOT_INTERFACE}/include)
+#link_directories($ENV{ATLAS_ROBOT_INTERFACE}/lib64)
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
@@ -98,6 +96,8 @@ set(HEADERS
     include/${PROJECT_NAME}/compliant_controller.h
     include/${PROJECT_NAME}/compliant_controller_impl.h
     include/${PROJECT_NAME}/AdmittanceController.h
+    include/${PROJECT_NAME}/BoundAdmittanceController.h
+    include/${PROJECT_NAME}/ZeroAdmittanceController.h
     include/${PROJECT_NAME}/CartForceController.h
     include/${PROJECT_NAME}/CartVelController.h
     include/${PROJECT_NAME}/InvKinController.h
@@ -111,7 +111,9 @@ set(HEADERS
 
 set(SOURCES
     src/compliant_controllers.cpp
+    src/ZeroAdmittanceController.cpp
     src/AdmittanceController.cpp
+    src/BoundAdmittanceController.cpp
     src/CartForceController.cpp
     src/CartVelController.cpp
     src/InvKinController.cpp
@@ -134,20 +136,16 @@ catkin_package(
 INCLUDE_DIRS include
 LIBRARIES vigir_compliant_ros_controller
 CATKIN_DEPENDS
-  control_toolbox
-  controller_interface
-  controller_manager
-  hardware_interface
-  joint_trajectory_controller
-  realtime_tools
-  urdf
-  kdl_parser
-  moveit_core
-  moveit_ros_planning
-  cmake_modules
-  flor_utilities
-  reflexxes
-  dynamic_reconfigure
+ control_toolbox
+ controller_interface
+ controller_manager
+ hardware_interface
+ joint_trajectory_controller
+ realtime_tools
+ urdf
+ moveit_core
+ moveit_ros_planning
+ dynamic_reconfigure
 #  DEPENDS system_lib
 )
 
@@ -166,7 +164,6 @@ include_directories(
 
 add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 #############

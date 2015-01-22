@@ -4,7 +4,6 @@
 #include <vigir_compliant_ros_controller/CustomTypes.h>
 #include <ros/ros.h>
 #include <boost/scoped_ptr.hpp>
-#include <atlas_msgs/AtlasState.h>
 
 #include <kdl/tree.hpp>
 #include <kdl/chain.hpp>
@@ -23,6 +22,8 @@ namespace compliant_controller {
         void updateJointState(VectorNd &q);
         void calcCompliantPosition(const VectorNd& q0, const Vector6d& fext, VectorNd& qd_out, VectorNd& qdotd_out);
         Vector3d getTipPosition(const VectorNd& q);
+
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     private:
         VectorNd getE1() const;
         VectorNd getE2() const;

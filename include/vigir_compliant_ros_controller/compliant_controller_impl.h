@@ -42,46 +42,47 @@ CompliantController<HardwareInterface>::
 CompliantController()
   : verbose_(false), // Set to true during debugging
     admittance_param_manager_(admittance_controller_)
-{}
+{
+    state_ = CONSTRUCTED;
+}
 
 template <class HardwareInterface>
 inline void CompliantController<HardwareInterface>::
 starting(const ros::Time& time) {
-  ROS_INFO_STREAM("Starting controller: " << name_);
-  // Update time data
-  TimeData time_data;
-  time_data.time   = time;
-  time_data.uptime = ros::Time(0.0);
-  time_data_.initRT(time_data);
+    ROS_INFO_STREAM("Starting controller: " << name_);
+    // Update time data
+    TimeData time_data;
+    time_data.time   = time;
+    time_data.uptime = ros::Time(0.0);
+    time_data_.initRT(time_data);
 
-  state_cmd_.position = Vector6d::Zero();
-  state_cmd_.velocity = Vector6d::Zero();
-  desired_state_.position = Vector6d::Zero();
-  desired_state_.velocity = Vector6d::Zero();
+    // Start admittance and position controller
+    admittance_controller_.starting();
+    hw_iface_adapter_.starting(time_data.uptime);
 
-  Transform pose = hw_iface_adapter_.getTipPose();
-  KDL::Rotation rotation;
-  ConversionHelper::eigenToKdl(pose.rotation, rotation);
-  double roll, pitch, yaw;
-  rotation.GetRPY(roll, pitch, yaw);
-  for (unsigned int i = 0; i < 3; i++) {
+    state_cmd_.position = Vector6d::Zero();
+    state_cmd_.velocity = Vector6d::Zero();
+    desired_state_.position = Vector6d::Zero();
+    desired_state_.velocity = Vector6d::Zero();
+
+    Transform pose = hw_iface_adapter_.getTipPose();
+    KDL::Rotation rotation;
+    ConversionHelper::eigenToKdl(pose.rotation, rotation);
+    double roll, pitch, yaw;
+    rotation.GetRPY(roll, pitch, yaw);
+    for (unsigned int i = 0; i < 3; i++) {
       state_cmd_.position(i) = pose.translation(i);
-  }
-  state_cmd_.position(3) = roll;
-  state_cmd_.position(4) = pitch;
-  state_cmd_.position(5) = yaw;
-  // for testing
-  //  state_cmd_.position(0) = 0.0130977;
-  //  state_cmd_.position(1) = -0.400299;
-  //  state_cmd_.position(2) = -0.205006;
-  //  state_cmd_.position(3) = 1.33341;
-  //  state_cmd_.position(4) = 0.193883;
-  //  state_cmd_.position(5) = 1.78593;
+    }
+    state_cmd_.position(3) = roll;
+    state_cmd_.position(4) = pitch;
+    state_cmd_.position(5) = yaw;
 
+    // Starting pose as quaternion
+    double x,y,z,w;
+    rotation.GetQuaternion(x,y,z,w);
+    ROS_INFO_STREAM("Starting pose: " << pose.translation << std::endl << x << ", " << y << ", " << z << ", " << w);
 
-  admittance_controller_.starting();
-  // Hardware interface adapter
-  hw_iface_adapter_.starting(time_data.uptime);
+    ROS_INFO_STREAM("Controller " << name_ << " started successfully.");
 }
 
 template <class HardwareInterface>
@@ -158,6 +159,7 @@ init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controlle
 
   // admittance controller
   admittance_controller_.init(inertia_, damping_, stiffness_);
+  admittance_controller_.activateStatePublishing(controller_nh);
   // admittance param manager
   admittance_param_manager_.init(controller_nh);
 
@@ -182,89 +184,93 @@ update(const ros::Time& time, const ros::Duration& period) {
   time_data.uptime = time_data_.readFromRT()->uptime + period; // Update controller uptime
   time_data_.writeFromNonRT(time_data); // TODO: Grrr, we need a lock-free data structure here!
 
-  admittance_controller_.update(state_cmd_.position, readFTSensor(), desired_state_.position, desired_state_.velocity, period.toSec());
+  admittance_controller_.update(time, state_cmd_.position, readFTSensor(), desired_state_.position, desired_state_.velocity, period.toSec());
 
-  //Write desired_state and state_error to hardware interface adapter
-  hw_iface_adapter_.updateCommand(time_data.uptime, time_data.period,
+  //Write desired_state to hardware interface adapter
+  hw_iface_adapter_.updateCommand(time, time_data.period,
                                   desired_state_);
 }
 
 template <class HardwareInterface>
 Vector6d CompliantController<HardwareInterface>::
 readFTSensor() {
-    const double* force = force_torque_sensor_handle_.getForce();
-    const double* torque = force_torque_sensor_handle_.getTorque();
-    Vector6d force_torque;
-    for (unsigned int i = 0; i < 3; i++) {
-        force_torque(i) = *(force+i);
-        force_torque(i+3) = *(torque+i);
+    if (ft_interface_found_) {
+        const double* force = force_torque_sensor_handle_.getForce();
+        const double* torque = force_torque_sensor_handle_.getTorque();
+        Vector6d force_torque;
+        for (unsigned int i = 0; i < 3; i++) {
+            force_torque(i) = *(force+i);
+            force_torque(i+3) = *(torque+i);
+        }
+        Matrix3d rot_base_tip = hw_iface_adapter_.getTipPose().rotation;
+        force_torque.block<3,1>(0,0) = rot_base_tip * force_torque.block<3,1>(0,0).eval();
+        force_torque.block<3,1>(3,0) = rot_base_tip * force_torque.block<3,1>(3,0).eval();
+        return force_torque;
+    } else {
+        return Vector6d::Zero();
     }
-    Matrix3d rot_base_tip = hw_iface_adapter_.getTipPose().rotation;
-    force_torque.block<3,1>(0,0) = rot_base_tip * force_torque.block<3,1>(0,0).eval();
-    force_torque.block<3,1>(3,0) = rot_base_tip * force_torque.block<3,1>(3,0).eval();
-    return force_torque;
 }
 
 template <class HardwareInterface>
 std::string CompliantController<HardwareInterface>::
-getHardwareInterfaceType() const
-{
-  return "This_controller_derives_from_ControllerBase_so_cannot_return_a_proper_single_interface_type";
+getHardwareInterfaceType() const {
+    return "This_controller_derives_from_ControllerBase_so_cannot_return_a_proper_single_interface_type";
 }
 
 template <class HardwareInterface>
 bool CompliantController<HardwareInterface>::
 initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros::NodeHandle &controller_nh,
-                         std::set<std::string>& claimed_resources)
-{
-  // check if construction finished cleanly
-  if (state_ != CONSTRUCTED){
-    ROS_ERROR("Cannot initialize this controller because it failed to be constructed");
-    return false;
-  }
+            std::set<std::string>& claimed_resources) {
+    // check if construction finished cleanly
+    if (state_ != CONSTRUCTED){
+        ROS_ERROR("Cannot initialize this controller because it failed to be constructed");
+        return false;
+    }
 
-  // get a pointer to the hardware interface
-  HardwareInterface* hw = robot_hw->get<HardwareInterface>();
-  if (!hw)
-  {
-      ROS_ERROR_STREAM("This controller requires a hardware interface of type " << hardware_interface::internal::demangledTypeName<HardwareInterface>() << ".");
-      return false;
-  }
-  ROS_INFO_STREAM ("Loading controller with hardware interface: " << hardware_interface::internal::demangledTypeName<HardwareInterface>() << ".");
+    // get a pointer to the hardware interface
+    HardwareInterface* hw = robot_hw->get<HardwareInterface>();
+    if (!hw) {
+        ROS_ERROR_STREAM("This controller requires a hardware interface of type " << hardware_interface::internal::demangledTypeName<HardwareInterface>() << ".");
+        return false;
+    }
+    ROS_INFO_STREAM ("Loading controller with hardware interface: " << hardware_interface::internal::demangledTypeName<HardwareInterface>() << ".");
 
 
-  //We have access to the full hw interface here and thus can grab multiple components of it
+    //We have access to the full hw interface here and thus can grab multiple components of it
 
-  // get pointer to force torque sensor interface
-  hardware_interface::ForceTorqueSensorInterface * force_torque_sensor_interface = robot_hw->get<hardware_interface::ForceTorqueSensorInterface >();
-  if (!force_torque_sensor_interface){
-    ROS_ERROR("Unable to retrieve ForceTorqueSensorInterface for compliant controller!");
-    return false;
-  }
-  // Get the name of the FT sensor to use from the parameter server
-  std::string ft_sensor_name = "ft_sensor";
-  controller_nh.getParam("ft_sensor_name", ft_sensor_name);
-  // Query the interface for the selected FT sensor
-  try {
-      force_torque_sensor_handle_ = force_torque_sensor_interface->getHandle(ft_sensor_name);
-  } catch (hardware_interface::HardwareInterfaceException e) {
-      ROS_ERROR_STREAM("Couldn't get handle for f/t sensor: " << ft_sensor_name << ". " << e.what());
-      return false;
-  }
-  ROS_INFO("Using force torque sensor: %s for compliant controller %s", ft_sensor_name.c_str(), getLeafNamespace(controller_nh_).c_str());
+    // get pointer to force torque sensor interface
+    hardware_interface::ForceTorqueSensorInterface * force_torque_sensor_interface = robot_hw->get<hardware_interface::ForceTorqueSensorInterface >();
+    if (!force_torque_sensor_interface){
+        ROS_ERROR("Unable to retrieve ForceTorqueSensorInterface for compliant controller!");
+        ROS_ERROR("Compliant behaviour deactivated!");
+        ft_interface_found_ = false;
+    } else {
+        ft_interface_found_ = true;
 
-  // init controller
-  hw->clearClaims();
-  if (!init(hw, root_nh, controller_nh))
-  {
-    ROS_ERROR("Failed to initialize the controller");
-    return false;
-  }
-  claimed_resources = hw->getClaims();
-  hw->clearClaims();
+        // Get the name of the FT sensor to use from the parameter server
+        std::string ft_sensor_name = "ft_sensor";
+        controller_nh.getParam("ft_sensor_name", ft_sensor_name);
+        // Query the interface for the selected FT sensor
+        try {
+            force_torque_sensor_handle_ = force_torque_sensor_interface->getHandle(ft_sensor_name);
+        } catch (hardware_interface::HardwareInterfaceException e) {
+            ROS_ERROR_STREAM("Couldn't get handle for f/t sensor: " << ft_sensor_name << ". " << e.what());
+            return false;
+        }
+        ROS_INFO("Using force torque sensor: %s for compliant controller %s", ft_sensor_name.c_str(), getLeafNamespace(controller_nh_).c_str());
+    }
 
-  state_ = INITIALIZED;
-  return true;
+    // init controller
+    hw->clearClaims();
+    if (!init(hw, root_nh, controller_nh)) {
+        ROS_ERROR("Failed to initialize the controller");
+        return false;
+    }
+    claimed_resources = hw->getClaims();
+    hw->clearClaims();
+
+    state_ = INITIALIZED;
+    return true;
 }
 
 template <class HardwareInterface>
@@ -274,6 +280,9 @@ poseCmdUpdate(const geometry_msgs::PoseStampedConstPtr& pose_ptr) {
     kdl_pose.p = KDL::Vector(pose_ptr->pose.position.x, pose_ptr->pose.position.y, pose_ptr->pose.position.z);
     kdl_pose.M = KDL::Rotation::Quaternion(pose_ptr->pose.orientation.x, pose_ptr->pose.orientation.y, pose_ptr->pose.orientation.z, pose_ptr->pose.orientation.w);
     ConversionHelper::kdlToEigen(kdl_pose, state_cmd_.position);
+//    if (pose_ptr->header.frame_id.compare(segment_names_[segment_names_.size()-1]) != 0) {
+//        ROS_WARN_STREAM("Target pose frame '" << pose_ptr->header.frame_id << "' doesn't match robot tip frame '" << segment_names_[segment_names_.size()-1] << "'.");
+//    }
 }
 
 template <class HardwareInterface>

@@ -23,6 +23,8 @@ namespace compliant_controller {
         static void eigenToKdl(const Matrix3d& matrix, KDL::Rotation& rotation);
         static void eigenToKdl(const Vector3d& eigen_vector, KDL::Vector& kdl_vector);
         static void eigenToEigen(const Vector6d& vector, Eigen::Affine3d &affine);
+
+        static void rotToQuatd(const Matrix3d& rot, Quatd& quat);
     };
 }
 #endif

@@ -6,6 +6,7 @@
 
 namespace compliant_controller {
     bool InvKinController::init(std::string group_name) {
+        publish_state_ = false;
 
         robot_model_loader_.reset(new robot_model_loader::RobotModelLoader());
         robot_model_ = robot_model_loader_->getModel();
@@ -47,7 +48,7 @@ namespace compliant_controller {
         return true;
     }
 
-    bool InvKinController::calcInvKin(const Vector6d& xd, VectorNd& joint_positions) {
+    bool InvKinController::calcInvKin(const ros::Time &time, const Vector6d& xd, VectorNd& joint_positions) {
         Eigen::Affine3d pose;
         ConversionHelper::eigenToEigen(xd, pose);
         geometry_msgs::Pose pose_msg;
@@ -59,19 +60,29 @@ namespace compliant_controller {
                                      joint_model_group_->getSolverInstance()->getTipFrame() << " failed. Error code: " << error_code.val);
             return false;
         }
+
+        double limit = 20 * M_PI / 180;
+
         // find maximum position change
-        double max_change = 0.0;
+        double min_change_factor = 1;
+        double requested_change = 0;
         for (unsigned int i = 0; i < solution_.size(); i++) {
             double change = std::abs(q_[i] - solution_[i]);
-            if (change > max_change) {
-                max_change = change;
+            if (change != 0.0) {
+                double factor = limit/change;
+                if (factor < min_change_factor) {
+                    min_change_factor = factor;
+                    requested_change = change;
+                }
             }
         }
 
         // limit joint angle change
-        if (max_change*180 > 10*M_PI) {
-            ROS_ERROR_STREAM_THROTTLE(1, "Joint angle change too big: " << max_change*180/M_PI << " degree.");
-            return false;
+        if (min_change_factor < 1) {
+            for (unsigned int i = 0; i < solution_.size(); i++) {
+                solution_[i] = solution_[i] * min_change_factor;
+            }
+            ROS_WARN_STREAM_THROTTLE(1,"Joint angle change too big (" << requested_change << "). Limiting speed with factor: " << min_change_factor << ".");
         }
 
         // Check output vector size
@@ -82,6 +93,10 @@ namespace compliant_controller {
 
         for (unsigned int i = 0; i < solution_.size(); i++) {
             joint_positions(i) = solution_[i];
+        }
+
+        if (publish_state_) {
+            publishState(time, joint_positions);
         }
         return true;
     }
@@ -98,10 +113,31 @@ namespace compliant_controller {
     }
 
     bool InvKinController::getTipTransform(Eigen::Affine3d& tip_transform) {
-        if (!joint_model_group_->getSolverInstance()->getPositionFK(joint_names_,q_,poses_)) {
-            ROS_ERROR("Computing FK failed.");
+        if (!joint_model_group_->getSolverInstance()->getPositionFK(joint_model_group_->getSolverInstance()->getTipFrames(), q_,poses_)) {
+            ROS_ERROR_STREAM("Computing FK failed.");
             return false;
         }
-        tf::poseMsgToEigen(poses_[poses_.size()-1],tip_transform);
+        tf::poseMsgToEigen(poses_[0],tip_transform);
+    }
+
+    void InvKinController::activateStatePublishing(ros::NodeHandle& nh) {
+        joint_state_publisher_ = nh.advertise<sensor_msgs::JointState>("joint_cmd", 1000);
+        publish_state_ = true;
+        seq_counter_ = 0;
+    }
+
+    void InvKinController::publishState(const ros::Time& time, const VectorNd& state) {
+        sensor_msgs::JointState state_msg;
+        state_msg.header.stamp = time;
+        state_msg.header.seq = seq_counter_; seq_counter_++;
+        state_msg.position.resize(state.size());
+        state_msg.effort.resize(state.size());
+        state_msg.velocity.resize(state.size());
+        for (unsigned int i = 0; i < state.size(); i++) {
+            state_msg.position[i] = state(i);
+            state_msg.effort[i] = 0;
+            state_msg.velocity[i] = 0;
+        }
+        joint_state_publisher_.publish(state_msg);
     }
 }

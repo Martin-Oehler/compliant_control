@@ -25,6 +25,8 @@ namespace compliant_controller {
         void stopping();
         bool updateJointState(const VectorNd& position);
         bool getTipPose(Transform& pose);
+
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     private:
         bool initialized_;
 
