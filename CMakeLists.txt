@@ -134,16 +134,20 @@ catkin_package(
 INCLUDE_DIRS include
 LIBRARIES vigir_compliant_ros_controller
 CATKIN_DEPENDS
- control_toolbox
- controller_interface
- controller_manager
- hardware_interface
- joint_trajectory_controller
- realtime_tools
- urdf
- moveit_core
- moveit_ros_planning
- reflexxes
+  control_toolbox
+  controller_interface
+  controller_manager
+  hardware_interface
+  joint_trajectory_controller
+  realtime_tools
+  urdf
+  kdl_parser
+  moveit_core
+  moveit_ros_planning
+  cmake_modules
+  flor_utilities
+  reflexxes
+  dynamic_reconfigure
 #  DEPENDS system_lib
 )
 
@@ -161,6 +165,7 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME} ${HEADERS} ${SOURCES})
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
