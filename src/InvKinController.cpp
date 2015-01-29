@@ -80,7 +80,8 @@ namespace compliant_controller {
         // limit joint angle change
         if (min_change_factor < 1) {
             for (unsigned int i = 0; i < solution_.size(); i++) {
-                solution_[i] = solution_[i] * min_change_factor;
+                double change = solution_[i] - q_[i];
+                solution_[i] =  q_[i] + (change * min_change_factor);
             }
             ROS_WARN_STREAM_THROTTLE(1,"Joint angle change (" << requested_change << ") bigger than max (" << limit << "). Limiting speed with factor: " << min_change_factor << ".");
         }
