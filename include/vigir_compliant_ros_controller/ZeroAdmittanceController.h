@@ -12,6 +12,10 @@ namespace compliant_controller {
         void starting();
         void stopping();
         void update(const Vector6d&x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size);
+
+        void setLastSetPointFailed();
+
+        // Configuration
         void activate(bool active);
         bool isActive();
         // Setters and getters
@@ -32,6 +36,7 @@ namespace compliant_controller {
         bool active_;
         Eigen::Matrix<double, 12, 1> f(const Vector6d &f_ext);
         Vector6d xd_;
+        Vector6d prev_xd_;
         /**
           Admittance parameters
           */
@@ -46,6 +51,8 @@ namespace compliant_controller {
         double dead_zone_rot_;
         double speed_limit_trans_;
         double speed_limit_rot_;
+
+        bool last_setpoint_failed_;
     };
 }
 

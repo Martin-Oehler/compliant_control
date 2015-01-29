@@ -4,7 +4,6 @@ namespace compliant_controller {
     AdmittanceController::AdmittanceController()
         : publish_state_(false),
           mode_(0) {
-
     }
 
     void AdmittanceController::init(double inertia, double damping, double stiffness) {
@@ -45,6 +44,12 @@ namespace compliant_controller {
 
         if (publish_state_) {
             publishCompliantPose(time, xd);
+        }
+    }
+
+    void AdmittanceController::setLastSetPointFailed() {
+        if (mode_ == 1) {
+            zero_addm_controller_.setLastSetPointFailed();
         }
     }
 

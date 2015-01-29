@@ -142,12 +142,12 @@ private:
   std::string               name_;               ///< Controller name.
   std::vector<JointHandle>  joints_;             ///< Handles to controlled joints.
   std::vector<std::string>  joint_names_;        ///< Controlled joint names.
-  std::vector<std::string>  segment_names_;
+  std::vector<std::string>  segment_names_;      ///< Controlled segments (links)
 
-  CartState state_cmd_;        ///< virtual setpoint
-  CartState desired_state_;    ///< compliant pose
+  CartState state_cmd_;        ///< virtual set-point
+  CartState desired_state_;    ///< compliant set-point
 
-  HwIfaceAdapter            hw_iface_adapter_;   ///< Adapts desired trajectory state to HW interface.
+  HwIfaceAdapter            hw_iface_adapter_;   ///< Adapts desired end-effector state to HW interface.
 
   realtime_tools::RealtimeBuffer<TimeData> time_data_;
 

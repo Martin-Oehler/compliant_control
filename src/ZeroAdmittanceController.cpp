@@ -30,6 +30,7 @@ namespace compliant_controller {
     void ZeroAdmittanceController::starting() {
         active_ = false;
         first_update_ = true;
+        last_setpoint_failed_ = false;
         force_integral_ = Vector6d::Zero();
         prev_force_ = Vector6d::Zero();
     }
@@ -41,6 +42,7 @@ namespace compliant_controller {
     void ZeroAdmittanceController::update(const Vector6d &x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size) {
         if (first_update_) {
             xd_ = x0;
+            prev_xd_ = x0;
             first_update_ = false;
         }
 
@@ -59,7 +61,7 @@ namespace compliant_controller {
             if (torque_length < dead_zone_rot_) {
                 f_ext_zeroed.block<3,1>(3,0) = Vector3d::Zero();
             } else {
-                f_ext_zeroed.block<3,1>(3,0) = (1-dead_zone_rot_ / torque_length) * f_ext.block<3,1>(3,0);;
+                f_ext_zeroed.block<3,1>(3,0) = (1-dead_zone_rot_ / torque_length) * f_ext.block<3,1>(3,0);
             }
 
             // for now, set torques to zero
@@ -94,9 +96,19 @@ namespace compliant_controller {
 //            ROS_INFO_STREAM_THROTTLE(0.5, "Proportional part: " << proportional);
 //            ROS_INFO_STREAM_THROTTLE(0.5, "Derivative part: " << derivative);
 //            ROS_INFO_STREAM_THROTTLE(0.5, "Integral part: " << force_integral_);
+
+            if (last_setpoint_failed_) { // if the end-effector can't reach last setpoint (xd), go back to prev setpoint (prev_xd)
+                xd_ = prev_xd_;
+                last_setpoint_failed_ = false;
+            }
+            prev_xd_ = xd_;
             xd_ = (xd_ + step_size * xdotd).eval();
             xd = xd_;
         }
+    }
+
+    void ZeroAdmittanceController::setLastSetPointFailed() {
+        last_setpoint_failed_ = true;
     }
 
     // Setters and getters

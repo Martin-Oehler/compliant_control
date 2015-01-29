@@ -19,6 +19,7 @@ namespace compliant_controller {
         void stopping();
         // setNoSolutionFoundInLastCycle - tells controller to reset set-point to current position
         void update(const ros::Time& time, const Vector6d&x0, const Vector6d& f_ext, Vector6d& xd, Vector6d& xdotd, double step_size);
+        void setLastSetPointFailed();
         void setMode(unsigned int mode);
         void activate(bool active);
         bool isActive();

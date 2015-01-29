@@ -30,9 +30,9 @@ public:
   void starting(const ros::Time& time) {}
   void stopping(const ros::Time& time) {}
 
-  void updateCommand(const ros::Time&     time,
+  bool updateCommand(const ros::Time&     time,
                      const ros::Duration& period,
-                     const State&         desired_state) {}
+                     const State&         desired_state) {return false;}
   Transform getTipPose() {return Transform();}
 };
 
@@ -63,7 +63,7 @@ public:
         }
     }
 
-    void updateCommand(const ros::Time& time, const ros::Duration& period, const compliant_controller::CartState& desired_state) {
+    bool updateCommand(const ros::Time& time, const ros::Duration& period, const compliant_controller::CartState& desired_state) {
         updateJointState();
         // calculate correction vector in cartesian space
         compliant_controller::Vector6d twist;
@@ -77,6 +77,7 @@ public:
             (*joint_handles_ptr_)[i].setCommand(velocities_(i));
         }
         //ROS_INFO_STREAM("joint velocity cmds: " << std::endl << velocities_);
+        return true;
     }
 
     // not realtime safe
@@ -207,15 +208,16 @@ public:
   }
   void stopping(const ros::Time& time) {}
 
-  void updateCommand(const ros::Time& time, const ros::Duration& period, const compliant_controller::CartState& desired_state) {
+  bool updateCommand(const ros::Time& time, const ros::Duration& period, const compliant_controller::CartState& desired_state) {
       for (unsigned int i = 0; i < joint_positions_.size(); i++) {
           joint_positions_(i) = (*joint_handles_ptr_)[i].getPosition();
       }
       inv_kin_controller_.updateJointState(joint_positions_);
-      inv_kin_controller_.calcInvKin(time, desired_state.position, joint_position_cmds_);
+      bool inv_kin_success = inv_kin_controller_.calcInvKin(time, desired_state.position, joint_position_cmds_);
       for (unsigned int i = 0; i < joint_position_cmds_.size(); i++) {
           (*joint_handles_ptr_)[i].setCommand(joint_position_cmds_(i));
       }
+      return inv_kin_success;
   }
   Transform getTipPose() {
       for (unsigned int i = 0; i < joint_positions_.size(); i++) {
@@ -286,7 +288,7 @@ public:
       jnt_pos_to_effort_hwi.stopping(time);
   }
 
-  void updateCommand(const ros::Time& time, const ros::Duration& period, const compliant_controller::CartState& desired_state) {
+  bool updateCommand(const ros::Time& time, const ros::Duration& period, const compliant_controller::CartState& desired_state) {
       // Read current joint positions
       for (unsigned int i = 0; i < joint_positions_.size(); i++) {
           joint_positions_(i) = (*joint_handles_ptr_)[i].getPosition();
@@ -294,7 +296,10 @@ public:
 
       // run inverse kinematics
       inv_kin_controller_.updateJointState(joint_positions_);
-      inv_kin_controller_.calcInvKin(time, desired_state.position, joint_position_cmds_);
+      bool inv_kin_success = inv_kin_controller_.calcInvKin(time, desired_state.position, joint_position_cmds_);
+      for (unsigned int i = 0; i < joint_position_cmds_.size(); i++) {
+          (*joint_handles_ptr_)[i].setCommand(joint_position_cmds_(i));
+      }
 
       // calculate state error
       for (unsigned int i = 0; i < joint_position_cmds_.size(); i++) {
@@ -308,13 +313,7 @@ public:
       // calculate pid command and send to robot
       jnt_pos_to_effort_hwi.updateCommand(time,period,joint_cmds_, joint_error_);
 
-      // Debugging
-//      std::stringstream cmd_debug;
-//      for (unsigned int i = 0; i < joint_handles_ptr_->size(); i++) {
-//         cmd_debug << i << ":" << (*joint_handles_ptr_)[i].getCommand() << std::endl;
-//      }
-//     cmd_debug << std::endl;
-//     ROS_INFO_STREAM_THROTTLE(1,"Current commands: " << std::endl << cmd_debug.str());
+      return inv_kin_success;
   }
   Transform getTipPose() {
       for (unsigned int i = 0; i < joint_positions_.size(); i++) {
