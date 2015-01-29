@@ -61,7 +61,7 @@ namespace compliant_controller {
             return false;
         }
 
-        double limit = 20 * M_PI / 180;
+        double limit = 10 * M_PI / 180;
 
         // find maximum position change
         double min_change_factor = 1;
@@ -82,7 +82,7 @@ namespace compliant_controller {
             for (unsigned int i = 0; i < solution_.size(); i++) {
                 solution_[i] = solution_[i] * min_change_factor;
             }
-            ROS_WARN_STREAM_THROTTLE(1,"Joint angle change too big (" << requested_change << "). Limiting speed with factor: " << min_change_factor << ".");
+            ROS_WARN_STREAM_THROTTLE(1,"Joint angle change (" << requested_change << ") bigger than max (" << limit << "). Limiting speed with factor: " << min_change_factor << ".");
         }
 
         // Check output vector size
