@@ -1,4 +1,4 @@
-#include <vigir_compliant_ros_controller/AdmittanceParamManager.h>
+#include <compliant_ros_controller/AdmittanceParamManager.h>
 
 namespace compliant_controller {
 
@@ -26,7 +26,7 @@ void AdmittanceParamManager::init(ros::NodeHandle& nh) {
  * @param config Contains the settings made by the user.
  * @param level
  */
-void AdmittanceParamManager::dynamicReconfigCB(vigir_compliant_ros_controller::VigirAdmittanceParamsConfig &config, uint32_t level) {
+void AdmittanceParamManager::dynamicReconfigCB(compliant_ros_controller::AdmittanceParamsConfig &config, uint32_t level) {
     setParams(config);
 }
 
@@ -39,7 +39,7 @@ void AdmittanceParamManager::dynamicReconfigCB(vigir_compliant_ros_controller::V
  * @param stiffness
  * @param dead_zone
  */
-void AdmittanceParamManager::setParams(vigir_compliant_ros_controller::VigirAdmittanceParamsConfig &config) {
+void AdmittanceParamManager::setParams(compliant_ros_controller::AdmittanceParamsConfig &config) {
     controller_->activate(config.active);
     controller_->setInertia(config.inertia);
     controller_->setDamping(config.damping);
@@ -67,7 +67,7 @@ void AdmittanceParamManager::setParams(vigir_compliant_ros_controller::VigirAdmi
  * Sends updates back to the reconfig server.
  * @param config Updated config.
  */
-void AdmittanceParamManager::updateDynamicReconfig(vigir_compliant_ros_controller::VigirAdmittanceParamsConfig &config) {
+void AdmittanceParamManager::updateDynamicReconfig(compliant_ros_controller::AdmittanceParamsConfig &config) {
     param_reconfig_mutex_.lock();
     param_reconfig_server_->updateConfig(config);
     param_reconfig_mutex_.unlock();

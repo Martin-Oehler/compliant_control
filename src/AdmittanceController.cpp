@@ -1,4 +1,4 @@
-#include <vigir_compliant_ros_controller/AdmittanceController.h>
+#include <compliant_ros_controller/AdmittanceController.h>
 
 namespace compliant_controller {
     AdmittanceController::AdmittanceController()

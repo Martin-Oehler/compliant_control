@@ -1,7 +1,7 @@
 #ifndef CONVERSION_HELPER
 #define CONVERSION_HELPER
 
-#include <vigir_compliant_ros_controller/CustomTypes.h>
+#include <compliant_ros_controller/CustomTypes.h>
 
 #include <kdl/frames.hpp>
 #include <kdl/jacobian.hpp>

@@ -1,7 +1,7 @@
 #ifndef BOUND_ADMITTANCE_CONTROLLER_H
 #define BOUND_ADMITTANCE_CONTROLLER_H
 
-#include <vigir_compliant_ros_controller/CustomTypes.h>
+#include <compliant_ros_controller/CustomTypes.h>
 
 namespace compliant_controller {
     class BoundAdmittanceController {

@@ -5,7 +5,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <vigir_compliant_ros_controller/CustomTypes.h>
+#include <compliant_ros_controller/CustomTypes.h>
 
 // KDL
 #include <kdl/tree.hpp>

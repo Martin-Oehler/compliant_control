@@ -1,9 +1,9 @@
 #ifndef ADMITTANCE_CONTROLLER_H
 #define ADMITTANCE_CONTROLLER_H
 
-#include <vigir_compliant_ros_controller/BoundAdmittanceController.h>
-#include <vigir_compliant_ros_controller/ZeroAdmittanceController.h>
-#include <vigir_compliant_ros_controller/CustomTypes.h>
+#include <compliant_ros_controller/BoundAdmittanceController.h>
+#include <compliant_ros_controller/ZeroAdmittanceController.h>
+#include <compliant_ros_controller/CustomTypes.h>
 
 
 #include <ros/ros.h>

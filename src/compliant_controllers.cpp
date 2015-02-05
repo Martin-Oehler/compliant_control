@@ -30,7 +30,7 @@
 #include <pluginlib/class_list_macros.h>
 
 // Project
-#include <vigir_compliant_ros_controller/compliant_controller.h>
+#include <compliant_ros_controller/compliant_controller.h>
 
 namespace position_controllers {
   typedef compliant_controller::CompliantController<hardware_interface::PositionJointInterface>

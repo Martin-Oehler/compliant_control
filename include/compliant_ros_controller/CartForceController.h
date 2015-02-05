@@ -1,7 +1,7 @@
 #ifndef CART_FORCE_CONTROLLER_H
 #define CART_FORCE_CONTROLLER_H
 
-#include <vigir_compliant_ros_controller/CustomTypes.h>
+#include <compliant_ros_controller/CustomTypes.h>
 #include <ros/ros.h>
 #include <boost/scoped_ptr.hpp>
 

@@ -31,7 +31,7 @@
 #define COMPLIANT_CONTROLLER_IMPL_H
 
 #include <kdl/frames.hpp>
-#include <vigir_compliant_ros_controller/ConversionHelper.h>
+#include <compliant_ros_controller/ConversionHelper.h>
 
 #include <boost/algorithm/string.hpp>
 

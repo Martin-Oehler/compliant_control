@@ -58,16 +58,16 @@
 #include <hardware_interface/force_torque_sensor_interface.h>
 
 // compliant control
-#include <vigir_compliant_ros_controller/hardware_interface_adapter.h>
-#include <vigir_compliant_ros_controller/AdmittanceController.h>
-#include <vigir_compliant_ros_controller/AdmittanceParamManager.h>
+#include <compliant_ros_controller/hardware_interface_adapter.h>
+#include <compliant_ros_controller/AdmittanceController.h>
+#include <compliant_ros_controller/AdmittanceParamManager.h>
 
 #include <hardware_interface/internal/demangle_symbol.h>
 
 // interactive marker
 #include <geometry_msgs/PoseStamped.h>
 
-#include <vigir_compliant_ros_controller/ConversionHelper.h>
+#include <compliant_ros_controller/ConversionHelper.h>
 //#include <joint_trajectory_controller/joint_trajectory_segment.h>
 
 namespace compliant_controller
@@ -163,6 +163,6 @@ private:
 
 } // namespace
 
-#include <vigir_compliant_ros_controller/compliant_controller_impl.h>
+#include <compliant_ros_controller/compliant_controller_impl.h>
 
 #endif // header guard

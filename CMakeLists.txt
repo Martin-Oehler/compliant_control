@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(vigir_compliant_ros_controller)
+project(compliant_ros_controller)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -23,7 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
 
 generate_dynamic_reconfigure_options(
-  cfg/VigirAdmittanceParams.cfg
+  cfg/AdmittanceParams.cfg
 )
 
 ## System dependencies are found with CMake's conventions
@@ -134,7 +134,7 @@ set(SOURCES
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 INCLUDE_DIRS include
-LIBRARIES vigir_compliant_ros_controller
+LIBRARIES compliant_ros_controller
 CATKIN_DEPENDS
  control_toolbox
  controller_interface
@@ -181,7 +181,7 @@ target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS vigir_compliant_ros_controller vigir_compliant_ros_controller_node
+# install(TARGETS compliant_ros_controller compliant_ros_controller_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -206,7 +206,7 @@ target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_vigir_compliant_ros_controller.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_compliant_ros_controller.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

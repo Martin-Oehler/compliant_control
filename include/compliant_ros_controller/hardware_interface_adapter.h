@@ -9,11 +9,11 @@
 #include <hardware_interface/joint_command_interface.h>
 
 // compliant control
-#include <vigir_compliant_ros_controller/ConversionHelper.h>
-#include <vigir_compliant_ros_controller/CustomTypes.h>
-#include <vigir_compliant_ros_controller/CartForceController.h>
-#include <vigir_compliant_ros_controller/CartVelController.h>
-#include <vigir_compliant_ros_controller/InvKinController.h>
+#include <compliant_ros_controller/ConversionHelper.h>
+#include <compliant_ros_controller/CustomTypes.h>
+#include <compliant_ros_controller/CartForceController.h>
+#include <compliant_ros_controller/CartVelController.h>
+#include <compliant_ros_controller/InvKinController.h>
 
 #include <joint_trajectory_controller/hardware_interface_adapter.h>
 

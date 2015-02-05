@@ -1,7 +1,7 @@
-#include <vigir_compliant_ros_controller/TJacInvKinController.h>
+#include <compliant_ros_controller/TJacInvKinController.h>
 
 #include <kdl_parser/kdl_parser.hpp>
-#include <vigir_compliant_ros_controller/ConversionHelper.h>
+#include <compliant_ros_controller/ConversionHelper.h>
 
 namespace compliant_controller {
 bool TJacInvKinController::init(const ros::NodeHandle& nh, const std::string root_name, const std::string tip_name) {

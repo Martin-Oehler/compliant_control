@@ -1,7 +1,7 @@
-#include <vigir_compliant_ros_controller/CartForceController.h>
+#include <compliant_ros_controller/CartForceController.h>
 
 #include <kdl_parser/kdl_parser.hpp>
-#include <vigir_compliant_ros_controller/ConversionHelper.h>
+#include <compliant_ros_controller/ConversionHelper.h>
 
 namespace compliant_controller {
     bool CartForceController::init(const ros::NodeHandle& node, const std::string& root_name, const std::string& tip_name, double kp, double kd, double ki) {

@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <package>
-  <name>vigir_compliant_ros_controller</name>
+  <name>compliant_ros_controller</name>
   <version>0.0.0</version>
-  <description>The vigir_compliant_ros_controller package</description>
+  <description>The compliant_ros_controller package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
   <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="kohlbrecher@todo.todo">Stefan Kohlbrecher</maintainer>
+  <maintainer email="martin.sven.oehler@gmail.com">Martin Oehler</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/vigir_compliant_ros_controller</url> -->
+  <!-- <url type="website">http://wiki.ros.org/compliant_ros_controller</url> -->
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->
@@ -69,6 +69,6 @@
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <controller_interface plugin="${prefix}/vigir_compliant_ros_control_plugins.xml"/>
+    <controller_interface plugin="${prefix}/compliant_ros_control_plugins.xml"/>
   </export>
 </package>

@@ -1,4 +1,4 @@
-#include <vigir_compliant_ros_controller/ConversionHelper.h>
+#include <compliant_ros_controller/ConversionHelper.h>
 
 #include <ros/ros.h>
 

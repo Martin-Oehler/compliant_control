@@ -3,8 +3,8 @@
 
 #include <ros/ros.h>
 
-#include <vigir_compliant_ros_controller/AdmittanceController.h>
-#include <vigir_compliant_ros_controller/VigirAdmittanceParamsConfig.h>
+#include <compliant_ros_controller/AdmittanceController.h>
+#include <compliant_ros_controller/AdmittanceParamsConfig.h>
 #include <dynamic_reconfigure/server.h>
 
 #include <boost/shared_ptr.hpp>
@@ -14,13 +14,13 @@ namespace compliant_controller {
     public:
         AdmittanceParamManager(AdmittanceController &controller);
         void init(ros::NodeHandle& nh);
-        void dynamicReconfigCB(vigir_compliant_ros_controller::VigirAdmittanceParamsConfig &config, uint32_t level);
-        void updateDynamicReconfig(vigir_compliant_ros_controller::VigirAdmittanceParamsConfig &config);
-        void setParams(vigir_compliant_ros_controller::VigirAdmittanceParamsConfig &config);
+        void dynamicReconfigCB(compliant_ros_controller::AdmittanceParamsConfig &config, uint32_t level);
+        void updateDynamicReconfig(compliant_ros_controller::AdmittanceParamsConfig &config);
+        void setParams(compliant_ros_controller::AdmittanceParamsConfig &config);
     private:
         AdmittanceController* controller_;
 
-        typedef dynamic_reconfigure::Server<vigir_compliant_ros_controller ::VigirAdmittanceParamsConfig> AdmittanceDynamicReconfigServer;
+        typedef dynamic_reconfigure::Server<compliant_ros_controller::AdmittanceParamsConfig> AdmittanceDynamicReconfigServer;
         boost::shared_ptr<AdmittanceDynamicReconfigServer> param_reconfig_server_;
         AdmittanceDynamicReconfigServer::CallbackType param_reconfig_callback_;
 

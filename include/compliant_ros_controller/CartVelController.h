@@ -16,7 +16,7 @@
 #include <kdl/chainfksolver.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
 
-#include <vigir_compliant_ros_controller/CustomTypes.h>
+#include <compliant_ros_controller/CustomTypes.h>
 
 namespace compliant_controller {
     class CartVelController {

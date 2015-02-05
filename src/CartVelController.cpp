@@ -1,7 +1,7 @@
-#include <vigir_compliant_ros_controller/CartVelController.h>
+#include <compliant_ros_controller/CartVelController.h>
 
 #include <kdl_parser/kdl_parser.hpp>
-#include <vigir_compliant_ros_controller/ConversionHelper.h>
+#include <compliant_ros_controller/ConversionHelper.h>
 
 namespace compliant_controller {
      bool CartVelController::init(ros::NodeHandle& nh, std::string root_name, std::string endeffector_name) {

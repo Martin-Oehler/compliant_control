@@ -1,7 +1,7 @@
-#include <vigir_compliant_ros_controller/JointAdmittanceController.h>
+#include <compliant_ros_controller/JointAdmittanceController.h>
 
 #include <kdl_parser/kdl_parser.hpp>
-#include <vigir_compliant_ros_controller/ConversionHelper.h>
+#include <compliant_ros_controller/ConversionHelper.h>
 
 namespace compliant_controller {
 bool JointAdmittanceController::init(ros::NodeHandle& node, std::string root_name, std::string tip_name, VectorNd& inertia, VectorNd& damping, VectorNd& stiffness, double step_size) {
