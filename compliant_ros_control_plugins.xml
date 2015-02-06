@@ -1,4 +1,4 @@
-<library path="lib/libvigir_compliant_ros_controller">
+<library path="lib/libcompliant_ros_controller">
 
   <class name="position_controllers/CompliantController"
          type="position_controllers::CompliantController"
