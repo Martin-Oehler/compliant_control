@@ -49,6 +49,16 @@ namespace compliant_controller {
     }
 
     bool InvKinController::calcInvKin(const ros::Time &time, const Vector6d& xd, VectorNd& joint_positions) {
+        calcInvKin(time, xd, solution_);
+
+        for (unsigned int i = 0; i < solution_.size(); i++) {
+            joint_positions(i) = solution_[i];
+        }
+
+        return true;
+    }
+
+    bool InvKinController::calcInvKin(const ros::Time &time, const Vector6d &xd, std::vector<double> &joint_positions) {
         Eigen::Affine3d pose;
         ConversionHelper::eigenToEigen(xd, pose);
         geometry_msgs::Pose pose_msg;
@@ -84,6 +94,12 @@ namespace compliant_controller {
                 solution_[i] =  q_[i] + (change * min_change_factor);
             }
             ROS_WARN_STREAM_THROTTLE(1,"Joint angle change (" << requested_change << ") bigger than max (" << limit << "). Limiting speed with factor: " << min_change_factor << ".");
+            std::stringstream debug;
+            debug << "Current\t | \t Requested" << std::endl;
+            for (unsigned int i = 0; i < solution_.size(); i++) {
+                debug << q_[i] << "\t\t" << solution_[i] << std::endl;
+            }
+            ROS_WARN_STREAM_THROTTLE(1,debug.str());
         }
 
         // Check output vector size
@@ -91,14 +107,12 @@ namespace compliant_controller {
             ROS_ERROR_STREAM("Number of joints in group (" << q_.size() << ") doesn't match dimension of joint position vector (" << joint_positions.size() << ").");
             return false;
         }
-
-        for (unsigned int i = 0; i < solution_.size(); i++) {
-            joint_positions(i) = solution_[i];
-        }
+        joint_positions = solution_;
 
         if (publish_state_) {
             publishState(time, joint_positions);
         }
+
         return true;
     }
 
@@ -110,6 +124,14 @@ namespace compliant_controller {
         for (unsigned int i = 0; i < q.size(); i++) {
             q_[i] = q(i);
         }
+        return true;
+    }
+    bool InvKinController::updateJointState(const std::vector<double>& q) {
+        if (q.size() != q_.size()) {
+            ROS_ERROR_STREAM("Given joint state size (" << q.size() << ") doesn't match number of joints (" << q_.size() << ").");
+            return false;
+        }
+        q_ = q;
         return true;
     }
 
@@ -141,4 +163,14 @@ namespace compliant_controller {
         }
         joint_state_publisher_.publish(state_msg);
     }
+
+   void InvKinController::publishState(const ros::Time &time, const std::vector<double>& state) {
+       sensor_msgs::JointState state_msg;
+       state_msg.header.stamp = time;
+       state_msg.header.seq = seq_counter_; seq_counter_++;
+       state_msg.position = state;
+       state_msg.effort.resize(state.size(), 0);
+       state_msg.velocity.resize(state.size(), 0);
+       joint_state_publisher_.publish(state_msg);
+   }
 }

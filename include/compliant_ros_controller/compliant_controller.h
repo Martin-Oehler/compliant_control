@@ -43,9 +43,6 @@
 // ROS
 #include <ros/node_handle.h>
 
-// URDF
-//#include <urdf/model.h>
-
 // realtime_tools
 #include <realtime_tools/realtime_box.h>
 #include <realtime_tools/realtime_buffer.h>
@@ -68,7 +65,6 @@
 #include <geometry_msgs/PoseStamped.h>
 
 #include <compliant_ros_controller/ConversionHelper.h>
-//#include <joint_trajectory_controller/joint_trajectory_segment.h>
 
 namespace compliant_controller
 {

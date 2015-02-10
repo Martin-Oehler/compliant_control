@@ -16,13 +16,16 @@ namespace compliant_controller {
     class InvKinController {
     public:
         bool init(std::string group_name);
-        bool calcInvKin(const ros::Time& time, const Vector6d& xd, VectorNd& joint_positions);
         bool updateJointState(const VectorNd& q);
+        bool updateJointState(const std::vector<double>& q);
+        bool calcInvKin(const ros::Time& time, const Vector6d& xd, VectorNd& joint_positions);
+        bool calcInvKin(const ros::Time &time, const Vector6d &xd, std::vector<double> &joint_positions);
         bool getTipTransform(Eigen::Affine3d& tip_transform);
 
         void activateStatePublishing(ros::NodeHandle& nh);
     private:
         void publishState(const ros::Time &time, const VectorNd& state);
+        void publishState(const ros::Time &time, const std::vector<double>& state);
         ros::Publisher joint_state_publisher_;
         bool publish_state_;
         int seq_counter_;
