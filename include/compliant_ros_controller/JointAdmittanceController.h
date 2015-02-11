@@ -17,25 +17,27 @@ namespace compliant_controller {
     class JointAdmittanceController {
     public:
         JointAdmittanceController() : initialized_(false) {}
-        bool init(ros::NodeHandle& node, std::string root_name, std::string tip_name, VectorNd& inertia, VectorNd& damping, VectorNd& stiffness, double step_size);
-        //bool init(ros::NodeHandle& nh, std::string root_name, std::string tip_name, double inertia, double damping, double stiffness, double step_size);
+        bool init(std::string root_name, std::string tip_name, Vector6d& cart_inertia, Vector6d& cart_damping, Vector6d& cart_stiffness);
+        bool init(std::string root_name, std::string tip_name, double cart_inertia, double cart_damping, double cart_stiffness);
         void updateJointState(VectorNd &q);
-        void calcCompliantPosition(const VectorNd& q0, const Vector6d& fext, VectorNd& qd_out, VectorNd& qdotd_out);
+        void calcCompliantPosition(const VectorNd& q0, const Vector6d& fext, VectorNd& qd_out, VectorNd& qdotd_out, double step_size);
         Vector3d getTipPosition(const VectorNd& q);
 
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     private:
-        VectorNd getE1() const;
-        VectorNd getE2() const;
-        VectorNd f(const VectorNd& fext) const;
+        void getE1(VectorNd &e1);
+        void getE2(VectorNd &e2);
+        VectorNd f(const VectorNd& fext);
 
         bool initialized_;
-        VectorNd e_;
 
-        VectorNd inertia_;
-        VectorNd damping_;
-        VectorNd stiffness_;
-        double step_size_;
+        VectorNd e_;
+        VectorNd e1_;
+        VectorNd e2_;
+
+        Vector6d inertia_;
+        Vector6d damping_;
+        Vector6d stiffness_;
 
         VectorNd q_;
 
@@ -47,6 +49,9 @@ namespace compliant_controller {
 
         boost::scoped_ptr<KDL::ChainJntToJacSolver> jnt_to_jac_solver_;
         boost::scoped_ptr<KDL::ChainFkSolverPos>    jnt_to_pose_solver_;
+
+        KDL::Jacobian Jtmp_;
+        KDL::JntArray qtmp_;
     };
 }
 
