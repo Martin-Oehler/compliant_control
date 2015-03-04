@@ -19,6 +19,7 @@ namespace compliant_controller {
         dead_zone_rot_ = 0.1;
         speed_limit_rot_ = 0.1;
         speed_limit_trans_ = 0.1;
+        active_ = false;
     }
 
     Vector6d BoundAdmittanceController::getE1() const {
@@ -42,7 +43,6 @@ namespace compliant_controller {
 
     void BoundAdmittanceController::starting() {
         e_ = Eigen::Matrix<double, 12, 1>::Zero();
-        active_ = false;
     }
 
     void BoundAdmittanceController::stopping() {

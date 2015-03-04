@@ -18,6 +18,7 @@ namespace compliant_controller {
         dead_zone_rot_ = 0.1;
         speed_limit_rot_ = 0.1;
         speed_limit_trans_ = 0.1;
+        active_ = false;
     }
 
     /**
@@ -28,7 +29,6 @@ namespace compliant_controller {
     }
 
     void ZeroAdmittanceController::starting() {
-        active_ = false;
         first_update_ = true;
         last_setpoint_failed_ = false;
         force_integral_ = Vector6d::Zero();
