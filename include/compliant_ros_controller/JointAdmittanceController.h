@@ -14,6 +14,7 @@
 #include <kdl/jntarray.hpp>
 
 namespace compliant_controller {
+    //template <std::size_t joint_number>
     class JointAdmittanceController {
     public:
         JointAdmittanceController() : initialized_(false) {}

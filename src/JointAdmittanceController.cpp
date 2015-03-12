@@ -91,10 +91,19 @@ void JointAdmittanceController::calcCompliantPosition(const VectorNd &q0, const 
 }
 
 VectorNd JointAdmittanceController::f(const VectorNd &tau) {
+    // Convert Cartesian to joint params
+    Jacobian J;
+    ConversionHelper::eigenToKdl(q_, qtmp_);
+    jnt_to_jac_solver_->JntToJac(qtmp_, Jtmp_);
+    ConversionHelper::kdlToEigen(Jtmp_, J);
+    VectorNd jnt_inertia, jnt_damping, jnt_stiffness;
     getE1(e1_);
     getE2(e2_);
     VectorNd f1 = e2_;
-    VectorNd f2 = inertia_.asDiagonal().inverse() * (tau - damping_.asDiagonal() * e2_ - stiffness_.asDiagonal() * e1_);
+    VectorNd f2;
+    for (unsigned int i = 0; i < f2.size(); i++) {
+        f2(i) = 1/jnt_inertia(i) * (tau(i) - jnt_damping(i) * e2_(i) - jnt_stiffness(i) * e1_(i));
+    }
     VectorNd f_out(f1.size() + f2.size());
     unsigned int i;
     for (i = 0; i < f1.size(); i++) {
