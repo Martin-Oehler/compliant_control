@@ -3,6 +3,7 @@
 
 #include <compliant_ros_controller/CustomTypes.h>
 #include <ros/ros.h>
+#include <geometry_msgs/WrenchStamped.h>
 #include <boost/scoped_ptr.hpp>
 
 #include <kdl/tree.hpp>
@@ -14,31 +15,39 @@
 #include <kdl/jntarray.hpp>
 
 namespace compliant_controller {
-    //template <std::size_t joint_number>
     class JointAdmittanceController {
     public:
         JointAdmittanceController() : initialized_(false) {}
         bool init(std::string root_name, std::string tip_name, Vector6d& cart_inertia, Vector6d& cart_damping, Vector6d& cart_stiffness);
         bool init(std::string root_name, std::string tip_name, double cart_inertia, double cart_damping, double cart_stiffness);
-        void updateJointState(VectorNd &q);
+        void updateJointState(const VectorNd &q);
         void calcCompliantPosition(const VectorNd& q0, const Vector6d& fext, VectorNd& qd_out, VectorNd& qdotd_out, double step_size);
         Vector3d getTipPosition(const VectorNd& q);
 
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     private:
-        void getE1(VectorNd &e1);
-        void getE2(VectorNd &e2);
-        VectorNd f(const VectorNd& fext);
+        void applyForceCB(const geometry_msgs::WrenchStampedConstPtr& wrench_ptr);
+        void getE1();
+        void getE2();
+        void stepFunction();
 
         bool initialized_;
 
         VectorNd e_;
         VectorNd e1_;
         VectorNd e2_;
+        VectorNd f_out_;
 
-        Vector6d inertia_;
-        Vector6d damping_;
-        Vector6d stiffness_;
+        Jacobian jac_;
+        VectorNd tau_;
+
+        Vector6d cart_inertia_;
+        Vector6d cart_damping_;
+        Vector6d cart_stiffness_;
+
+        VectorNd jnt_inertia_;
+        VectorNd jnt_damping_;
+        VectorNd jnt_stiffness_;
 
         VectorNd q_;
 
@@ -53,6 +62,9 @@ namespace compliant_controller {
 
         KDL::Jacobian Jtmp_;
         KDL::JntArray qtmp_;
+
+        ros::Subscriber wrench_sub_;
+        Vector6d virtual_force_;
     };
 }
 
