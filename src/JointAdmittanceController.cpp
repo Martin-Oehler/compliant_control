@@ -22,7 +22,7 @@ bool JointAdmittanceController::init(std::string root_name, std::string tip_name
     }
 
     if (!kdl_tree_.getChain(root_name_,tip_name_,kdl_chain_)) {
-       ROS_ERROR("Error constructing kdl chain from kdl tree.");
+       ROS_ERROR_STREAM("Error constructing kdl chain from kdl tree. Root: " << root_name_ << " Tip: " << tip_name_);
        return false;
     }
     jnt_to_jac_solver_.reset(new KDL::ChainJntToJacSolver(kdl_chain_));
@@ -34,12 +34,15 @@ bool JointAdmittanceController::init(std::string root_name, std::string tip_name
     f_out_.setZero(kdl_chain_.getNrOfJoints()*2);
 
     q_.setZero(kdl_chain_.getNrOfJoints());
+    q0_.setZero(kdl_chain_.getNrOfJoints());
+    qd_out_.setZero(kdl_chain_.getNrOfJoints());
+    qdotd_out_.setZero(kdl_chain_.getNrOfJoints());
     e1_.setZero(kdl_chain_.getNrOfJoints());
     e2_.setZero(kdl_chain_.getNrOfJoints());
     tau_.setZero(kdl_chain_.getNrOfJoints());
-    jnt_inertia_.setZero(kdl_chain_.getNrOfJoints());
-    jnt_damping_.setZero(kdl_chain_.getNrOfJoints());
-    jnt_stiffness_.setZero(kdl_chain_.getNrOfJoints());
+    jnt_inertia_.setZero(kdl_chain_.getNrOfJoints(), kdl_chain_.getNrOfJoints());
+    jnt_damping_.setZero(kdl_chain_.getNrOfJoints(), kdl_chain_.getNrOfJoints());
+    jnt_stiffness_.setZero(kdl_chain_.getNrOfJoints(), kdl_chain_.getNrOfJoints());
 
     jac_.resize(Eigen::NoChange, kdl_chain_.getNrOfJoints());
     Jtmp_.resize(kdl_chain_.getNrOfJoints());
@@ -73,6 +76,14 @@ bool JointAdmittanceController::init(std::string root_name, std::string tip_name
     return init(root_name, tip_name, m, d, k);
 }
 
+void JointAdmittanceController::starting() {
+    e_.setZero();
+}
+
+void JointAdmittanceController::stopping() {
+
+}
+
 void JointAdmittanceController::updateJointState(const VectorNd &q) {
     if (q.size() != kdl_chain_.getNrOfJoints()) {
         ROS_ERROR_STREAM_THROTTLE(0.5, "State vector size (" << q.size() << ") doesn't match chain size (" << kdl_chain_.getNrOfJoints() << ").");
@@ -81,7 +92,28 @@ void JointAdmittanceController::updateJointState(const VectorNd &q) {
     q_ = q;
 }
 
-void JointAdmittanceController::calcCompliantPosition(const VectorNd &q0, const Vector6d &fext, VectorNd& qd_out, VectorNd &qdotd_out, double step_size) {
+void JointAdmittanceController::updateJointState(const std::vector<double> &q) {
+    if (q.size() != kdl_chain_.getNrOfJoints()) {
+        ROS_ERROR_STREAM_THROTTLE(0.5, "State vector size (" << q.size() << ") doesn't match chain size (" << kdl_chain_.getNrOfJoints() << ").");
+        return;
+    }
+    for (unsigned int i = 0; i < q.size(); i++) {
+        q_(i) = q[i];
+    }
+}
+
+void JointAdmittanceController::update(const std::vector<double> q0, const Vector6d& fext, std::vector<double> &qd_out, std::vector<double> &qdotd_out, double step_size) {
+    for (unsigned int i = 0; i < q0.size(); i++) {
+        q0_(i) = q0[i];
+    }
+    update(q0_, fext, qd_out_, qdotd_out_, step_size);
+    for (unsigned int i = 0; i < q0.size(); i++) {
+        qd_out[i] = qd_out_(i);
+        qdotd_out[i] = qdotd_out_(i);
+    }
+}
+
+void JointAdmittanceController::update(const VectorNd &q0, const Vector6d &fext, VectorNd& qd_out, VectorNd &qdotd_out, double step_size) {
     ConversionHelper::eigenToKdl(q_,qtmp_);
     jnt_to_jac_solver_->JntToJac(qtmp_,Jtmp_);
     ConversionHelper::kdlToEigen(Jtmp_, jac_);
@@ -97,16 +129,14 @@ void JointAdmittanceController::calcCompliantPosition(const VectorNd &q0, const 
 
 void JointAdmittanceController::stepFunction() {
     // Convert Cartesian to joint params
-    ConversionHelper::eigenToKdl(q_, qtmp_);
-    jnt_to_jac_solver_->JntToJac(qtmp_, Jtmp_);
-    ConversionHelper::kdlToEigen(Jtmp_, jac_);
     jnt_inertia_ = jac_.transpose() * cart_inertia_.asDiagonal() * jac_;
     jnt_damping_ = jac_.transpose() * cart_damping_.asDiagonal() * jac_;
     jnt_stiffness_ = jac_.transpose() * cart_stiffness_.asDiagonal() * jac_;
     getE1();
     getE2();
     f_out_.block(0, 0, kdl_chain_.getNrOfJoints(), 1) = e2_;
-    f_out_.block(kdl_chain_.getNrOfJoints(), 0, kdl_chain_.getNrOfJoints(), 1) = jnt_inertia_.inverse() * (tau_ - jnt_damping_ * e2_ - jnt_stiffness_ * e1_);
+    //f_out_.block(kdl_chain_.getNrOfJoints(), 0, kdl_chain_.getNrOfJoints(), 1) = jnt_inertia_.inverse() * (tau_ - jnt_damping_ * e2_ - jnt_stiffness_ * e1_);
+    f_out_.block(kdl_chain_.getNrOfJoints(), 0, kdl_chain_.getNrOfJoints(), 1) = tau_ - jnt_damping_ * e2_ - jnt_stiffness_ * e1_;
 }
 
 Vector3d JointAdmittanceController::getTipPosition(const VectorNd& q) {
@@ -139,6 +169,7 @@ void JointAdmittanceController::applyForceCB(const geometry_msgs::WrenchStampedC
     virtual_force_(3) = wrench_ptr->wrench.torque.x;
     virtual_force_(4) = wrench_ptr->wrench.torque.y;
     virtual_force_(5) = wrench_ptr->wrench.torque.z;
+    ROS_INFO_STREAM("Received virtual force: " << virtual_force_);
 }
 
 }

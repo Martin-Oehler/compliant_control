@@ -20,8 +20,12 @@ namespace compliant_controller {
         JointAdmittanceController() : initialized_(false) {}
         bool init(std::string root_name, std::string tip_name, Vector6d& cart_inertia, Vector6d& cart_damping, Vector6d& cart_stiffness);
         bool init(std::string root_name, std::string tip_name, double cart_inertia, double cart_damping, double cart_stiffness);
+        void starting();
+        void stopping();
         void updateJointState(const VectorNd &q);
-        void calcCompliantPosition(const VectorNd& q0, const Vector6d& fext, VectorNd& qd_out, VectorNd& qdotd_out, double step_size);
+        void updateJointState(const std::vector<double> &q);
+        void update(const VectorNd& q0, const Vector6d& fext, VectorNd& qd_out, VectorNd& qdotd_out, double step_size);
+        void update(const std::vector<double> q0, const Vector6d& fext, std::vector<double>& qd_out, std::vector<double>& qdotd_out, double step_size);
         Vector3d getTipPosition(const VectorNd& q);
 
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -45,11 +49,14 @@ namespace compliant_controller {
         Vector6d cart_damping_;
         Vector6d cart_stiffness_;
 
-        VectorNd jnt_inertia_;
-        VectorNd jnt_damping_;
-        VectorNd jnt_stiffness_;
+        MatrixNd jnt_inertia_;
+        MatrixNd jnt_damping_;
+        MatrixNd jnt_stiffness_;
 
         VectorNd q_;
+        VectorNd q0_;
+        VectorNd qd_out_;
+        VectorNd qdotd_out_;
 
         std::string root_name_;
         std::string tip_name_;
