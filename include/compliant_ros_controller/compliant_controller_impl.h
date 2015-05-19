@@ -122,11 +122,7 @@ init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controlle
   }
 
   // controlled segments
-  segment_names_ = getStrings(controller_nh_, "segments");
-  if (segment_names_.empty()) {
-      ROS_ERROR("No segment names set for controller.");
-      return false;
-  }
+	controller_nh.param("segments", segment_names_, std::vector<std::string>());
 
   // controlled joints
   joint_names_ = getStrings(controller_nh_, "joints");
@@ -147,9 +143,9 @@ init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controlle
   ROS_INFO_STREAM("Found " << n_joints << " joints.");
   std::stringstream joint_list;
   for (unsigned int i = 0; i < n_joints; i++) {
-      joint_list << segment_names_[i] << "\t\t(" <<joints_[i].getName() << ")" << std::endl;
+			joint_list << joints_[i].getName() << std::endl;
   }
-  ROS_INFO_STREAM("Controlled segments (joints): " << std::endl << joint_list.str());
+	ROS_INFO_STREAM("Controlled joints: " << std::endl << joint_list.str());
 
   // hardware interface adapter
   if (!hw_iface_adapter_.init(segment_names_, joints_, controller_nh_)) {
