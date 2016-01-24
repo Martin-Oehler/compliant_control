@@ -32,7 +32,11 @@ The controller can then be started using:
 <node name="compliant_controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="[Controller name]" />
 ```
 
-### Controller usage
+### Inverse Kinematics
+
+Inverse Kinematics is called using moveit IK plugins. Since the controller is working with sensor feedback, **IK needs to be faster than one control loop period**. So consider using [IKFast](http://wiki.ros.org/Industrial/Tutorials/Create_a_Fast_IK_Solution/moveit_plugin) or [trac_ik](http://wiki.ros.org/trac_ik).
+
+### Controller Usage
 
 The compliant controller uses [dynamic_reconfigure](http://wiki.ros.org/dynamic_reconfigure) to change control parameters on runtime.
 Open up rqt and load the dynamic_reconfigure plugin. Open the node that corresponds to the compliant controller.
