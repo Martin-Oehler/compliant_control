@@ -85,7 +85,7 @@ public:
 
   /** \name Non Real-Time Safe Functions
    *\{*/
-  bool init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh);
+  bool init(HardwareInterface* hw, ros::NodeHandle& controller_nh);
   /*\}*/
 
   /** \name Real-Time Safe Functions
@@ -105,7 +105,7 @@ public:
   // These two functions have to be implemented as we derive from ControllerBase
   std::string getHardwareInterfaceType() const;
   bool initRequest(hardware_interface::RobotHW* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh,
-                           std::set<std::string>& claimed_resources);
+                           ClaimedResources& claimed_resources);
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

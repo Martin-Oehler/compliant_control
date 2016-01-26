@@ -95,7 +95,7 @@ stopping(const ros::Time& time) {
 
 template <class HardwareInterface>
 bool CompliantController<HardwareInterface>::
-init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh) {
+init(HardwareInterface* hw, ros::NodeHandle& controller_nh) {
 
   // Cache controller node handle
   controller_nh_ = controller_nh;
@@ -165,7 +165,7 @@ init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controlle
       ROS_ERROR_STREAM("Parameter cmd_topic_name not set. Using default '/pose'");
       cmd_topic_name = "/pose";
   }
-  pose_sub_ = root_nh.subscribe(cmd_topic_name, 1, &CompliantController::poseCmdUpdate, this);
+  pose_sub_ = controller_nh_.subscribe(cmd_topic_name, 1, &CompliantController::poseCmdUpdate, this);
 
   return true;
 }
@@ -217,8 +217,8 @@ getHardwareInterfaceType() const {
 
 template <class HardwareInterface>
 bool CompliantController<HardwareInterface>::
-initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros::NodeHandle &controller_nh,
-            std::set<std::string>& claimed_resources) {
+initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh,
+            ClaimedResources& claimed_resources) {
     // check if construction finished cleanly
     if (state_ != CONSTRUCTED){
         ROS_ERROR("Cannot initialize this controller because it failed to be constructed");
@@ -260,11 +260,12 @@ initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros
 
     // init controller
     hw->clearClaims();
-    if (!init(hw, root_nh, controller_nh)) {
+    if (!init(hw, controller_nh)) {
         ROS_ERROR("Failed to initialize the controller");
         return false;
     }
-    claimed_resources = hw->getClaims();
+    hardware_interface::InterfaceResources iface_res(getHardwareInterfaceType(), hw->getClaims());
+    claimed_resources.assign(1, iface_res);
     hw->clearClaims();
 
     state_ = INITIALIZED;
@@ -321,6 +322,7 @@ getStrings(const ros::NodeHandle& nh, const std::string& param_name) {
   }
   return out;
 }
+
 template <class HardwareInterface>
 bool CompliantController<HardwareInterface>::
 getVector(const ros::NodeHandle& nh, const std::string& param_name, Vector6d& vector) {
@@ -345,7 +347,6 @@ getVector(const ros::NodeHandle& nh, const std::string& param_name, Vector6d& ve
     }
     return true;
 }
-
 
 } // namespace
 
