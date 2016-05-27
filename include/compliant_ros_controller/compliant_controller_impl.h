@@ -239,8 +239,8 @@ initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros
     // get pointer to force torque sensor interface
     hardware_interface::ForceTorqueSensorInterface * force_torque_sensor_interface = robot_hw->get<hardware_interface::ForceTorqueSensorInterface >();
     if (!force_torque_sensor_interface){
-        ROS_ERROR("Unable to retrieve ForceTorqueSensorInterface for compliant controller!");
-        ROS_ERROR("Compliant behaviour deactivated!");
+        ROS_WARN("Unable to retrieve ForceTorqueSensorInterface for compliant controller!");
+        ROS_WARN("Compliant behaviour deactivated!");
         ft_interface_found_ = false;
     } else {
         ft_interface_found_ = true;
@@ -252,10 +252,13 @@ initRequest(hardware_interface::RobotHW* robot_hw, ros::NodeHandle& root_nh, ros
         try {
             force_torque_sensor_handle_ = force_torque_sensor_interface->getHandle(ft_sensor_name);
         } catch (hardware_interface::HardwareInterfaceException e) {
-            ROS_ERROR_STREAM("Couldn't get handle for f/t sensor: " << ft_sensor_name << ". " << e.what());
-            return false;
+            ROS_WARN_STREAM("Couldn't get handle for f/t sensor: " << ft_sensor_name << ". " << e.what());
+            ROS_WARN("Compliant behaviour deactivated!");
+            ft_interface_found_ = false;
         }
-        ROS_INFO("Using force torque sensor: %s for compliant controller %s", ft_sensor_name.c_str(), getLeafNamespace(controller_nh_).c_str());
+        if (ft_interface_found_) {
+          ROS_INFO("Using force torque sensor: %s for compliant controller %s", ft_sensor_name.c_str(), getLeafNamespace(controller_nh_).c_str());
+        }
     }
 
     // init controller
