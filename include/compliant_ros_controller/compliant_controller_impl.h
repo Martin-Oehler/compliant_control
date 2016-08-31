@@ -155,7 +155,9 @@ init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controlle
 
   // admittance controller
   admittance_controller_.init(inertia_, damping_, stiffness_);
-  admittance_controller_.activateStatePublishing(controller_nh);
+  std::string base_link;
+  controller_nh.param<std::string>("base_link", base_link, "");
+  admittance_controller_.activateStatePublishing(controller_nh, base_link);
   // admittance param manager
   admittance_param_manager_.init(controller_nh);
 
