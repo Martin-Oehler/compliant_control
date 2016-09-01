@@ -1,4 +1,4 @@
-#include <compliant_ros_controller/AdmittanceParamManager.h>
+#include <compliant_ros_controller/compliance/AdmittanceParamManager.h>
 
 namespace compliant_controller {
 

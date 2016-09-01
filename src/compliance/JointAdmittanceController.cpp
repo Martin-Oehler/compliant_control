@@ -1,4 +1,4 @@
-#include <compliant_ros_controller/JointAdmittanceController.h>
+#include <compliant_ros_controller/compliance/JointAdmittanceController.h>
 
 #include <kdl_parser/kdl_parser.hpp>
 #include <compliant_ros_controller/ConversionHelper.h>

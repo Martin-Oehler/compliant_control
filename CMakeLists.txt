@@ -93,34 +93,34 @@ find_package(Eigen REQUIRED)
 # )
 
 set(HEADERS
+    include/${PROJECT_NAME}/compliance/AdmittanceController.h
+    include/${PROJECT_NAME}/compliance/BoundAdmittanceController.h
+    include/${PROJECT_NAME}/compliance/ZeroAdmittanceController.h
+    include/${PROJECT_NAME}/compliance/JointAdmittanceController.h
+    include/${PROJECT_NAME}/compliance/AdmittanceParamManager.h
+    include/${PROJECT_NAME}/inverse_kinematics/CartForceController.h
+    include/${PROJECT_NAME}/inverse_kinematics/CartVelController.h
+    include/${PROJECT_NAME}/inverse_kinematics/InvKinController.h
+    include/${PROJECT_NAME}/inverse_kinematics/TJacInvKinController.h
     include/${PROJECT_NAME}/compliant_controller.h
     include/${PROJECT_NAME}/compliant_controller_impl.h
-    include/${PROJECT_NAME}/AdmittanceController.h
-    include/${PROJECT_NAME}/BoundAdmittanceController.h
-    include/${PROJECT_NAME}/ZeroAdmittanceController.h
-    include/${PROJECT_NAME}/CartForceController.h
-    include/${PROJECT_NAME}/CartVelController.h
-    include/${PROJECT_NAME}/InvKinController.h
     include/${PROJECT_NAME}/ConversionHelper.h
-    include/${PROJECT_NAME}/JointAdmittanceController.h
     include/${PROJECT_NAME}/CustomTypes.h
     include/${PROJECT_NAME}/hardware_interface_adapter.h
-    include/${PROJECT_NAME}/AdmittanceParamManager.h
-    include/${PROJECT_NAME}/TJacInvKinController.h
 )
 
 set(SOURCES
-    src/compliant_controllers.cpp
-    src/ZeroAdmittanceController.cpp
-    src/AdmittanceController.cpp
-    src/BoundAdmittanceController.cpp
-    src/CartForceController.cpp
-    src/CartVelController.cpp
-    src/InvKinController.cpp
+    src/inverse_kinematics/CartForceController.cpp
+    src/inverse_kinematics/CartVelController.cpp
+    src/inverse_kinematics/InvKinController.cpp
+    src/inverse_kinematics/TJacInvKinController.cpp
+    src/compliance/AdmittanceController.cpp
+    src/compliance/BoundAdmittanceController.cpp
+    src/compliance/ZeroAdmittanceController.cpp
+    src/compliance/JointAdmittanceController.cpp
+    src/compliance/AdmittanceParamManager.cpp
     src/ConversionHelper.cpp
-    src/JointAdmittanceController.cpp
-    src/AdmittanceParamManager.cpp
-    src/TJacInvKinController.cpp
+    src/compliant_controllers.cpp
 )
 
 ###################################

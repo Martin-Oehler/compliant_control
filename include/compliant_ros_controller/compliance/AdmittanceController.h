@@ -1,8 +1,8 @@
 #ifndef ADMITTANCE_CONTROLLER_H
 #define ADMITTANCE_CONTROLLER_H
 
-#include <compliant_ros_controller/BoundAdmittanceController.h>
-#include <compliant_ros_controller/ZeroAdmittanceController.h>
+#include <compliant_ros_controller/compliance/BoundAdmittanceController.h>
+#include <compliant_ros_controller/compliance/ZeroAdmittanceController.h>
 #include <compliant_ros_controller/CustomTypes.h>
 
 

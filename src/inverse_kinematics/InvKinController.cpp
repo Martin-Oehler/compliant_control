@@ -1,4 +1,4 @@
-#include <compliant_ros_controller/InvKinController.h>
+#include <compliant_ros_controller/inverse_kinematics/InvKinController.h>
 #include <compliant_ros_controller/ConversionHelper.h>
 #include <eigen_conversions/eigen_msg.h>
 

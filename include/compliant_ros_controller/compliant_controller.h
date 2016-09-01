@@ -56,8 +56,8 @@
 
 // compliant control
 #include <compliant_ros_controller/hardware_interface_adapter.h>
-#include <compliant_ros_controller/AdmittanceController.h>
-#include <compliant_ros_controller/AdmittanceParamManager.h>
+#include <compliant_ros_controller/compliance/AdmittanceController.h>
+#include <compliant_ros_controller/compliance/AdmittanceParamManager.h>
 
 #include <hardware_interface/internal/demangle_symbol.h>
 

@@ -3,7 +3,7 @@
 
 #include <ros/ros.h>
 
-#include <compliant_ros_controller/AdmittanceController.h>
+#include <compliant_ros_controller/compliance/AdmittanceController.h>
 #include <compliant_ros_controller/AdmittanceParamsConfig.h>
 #include <dynamic_reconfigure/server.h>
 

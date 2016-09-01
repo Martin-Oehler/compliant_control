@@ -1,4 +1,4 @@
-#include <compliant_ros_controller/ZeroAdmittanceController.h>
+#include <compliant_ros_controller/compliance/ZeroAdmittanceController.h>
 
 namespace compliant_controller {
     void ZeroAdmittanceController::init(double inertia, double damping, double stiffness) {
