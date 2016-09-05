@@ -194,7 +194,7 @@ public:
         return false;
       }
 
-      if (!inv_kin_controller_.init(moveit_group)) { // add moveit group to config
+      if (!inv_kin_controller_.init(moveit_group)) {
           return false;
       }
       inv_kin_controller_.activateStatePublishing(controller_nh);

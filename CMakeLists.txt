@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_ros_planning
   cmake_modules
   dynamic_reconfigure
+  robot_transforms
 )
 
 # Activate c++11
@@ -146,6 +147,7 @@ CATKIN_DEPENDS
  moveit_core
  moveit_ros_planning
  dynamic_reconfigure
+ robot_transforms
 #  DEPENDS system_lib
 )
 
