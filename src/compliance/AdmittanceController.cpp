@@ -1,4 +1,4 @@
-#include <compliant_ros_controller/AdmittanceController.h>
+#include <compliant_ros_controller/compliance/AdmittanceController.h>
 
 namespace compliant_controller {
     AdmittanceController::AdmittanceController()
@@ -43,7 +43,7 @@ namespace compliant_controller {
         }
 
         if (publish_state_) {
-            publishCompliantPose(time, xd);
+            publishCompliantPose(time, xd, frame_);
         }
     }
 
@@ -53,17 +53,18 @@ namespace compliant_controller {
         }
     }
 
-    void AdmittanceController::activateStatePublishing(ros::NodeHandle& nh) {
+    void AdmittanceController::activateStatePublishing(ros::NodeHandle& nh, std::string frame_id) {
         pose_publisher_ = nh.advertise<geometry_msgs::PoseStamped>("compliant_pose", 1000);
         publish_state_ = true;
         seq_counter_ = 0;
+        frame_ = frame_id;
     }
 
-    void AdmittanceController::publishCompliantPose(const ros::Time &time, Vector6d& pose) {
+    void AdmittanceController::publishCompliantPose(const ros::Time &time, Vector6d& pose, std::string frame_id) {
         geometry_msgs::PoseStamped pose_stamped;
         pose_stamped.header.stamp = time;
         pose_stamped.header.seq = seq_counter_; seq_counter_++;
-        pose_stamped.header.frame_id = "utorso";
+        pose_stamped.header.frame_id = frame_id;
 
         pose_stamped.pose.position.x = pose(0);
         pose_stamped.pose.position.y = pose(1);

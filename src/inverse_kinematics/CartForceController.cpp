@@ -1,4 +1,4 @@
-#include <compliant_ros_controller/CartForceController.h>
+#include <compliant_ros_controller/inverse_kinematics/CartForceController.h>
 
 #include <kdl_parser/kdl_parser.hpp>
 #include <compliant_ros_controller/ConversionHelper.h>

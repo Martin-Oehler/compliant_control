@@ -1,4 +1,4 @@
-#include <compliant_ros_controller/TJacInvKinController.h>
+#include <compliant_ros_controller/inverse_kinematics/TJacInvKinController.h>
 
 #include <kdl_parser/kdl_parser.hpp>
 #include <compliant_ros_controller/ConversionHelper.h>

@@ -11,9 +11,9 @@
 // compliant control
 #include <compliant_ros_controller/ConversionHelper.h>
 #include <compliant_ros_controller/CustomTypes.h>
-#include <compliant_ros_controller/CartForceController.h>
-#include <compliant_ros_controller/CartVelController.h>
-#include <compliant_ros_controller/InvKinController.h>
+#include <compliant_ros_controller/inverse_kinematics/CartForceController.h>
+#include <compliant_ros_controller/inverse_kinematics/CartVelController.h>
+#include <compliant_ros_controller/inverse_kinematics/InvKinController.h>
 
 #include <joint_trajectory_controller/hardware_interface_adapter.h>
 
@@ -194,7 +194,7 @@ public:
         return false;
       }
 
-      if (!inv_kin_controller_.init(moveit_group)) { // add moveit group to config
+      if (!inv_kin_controller_.init(moveit_group)) {
           return false;
       }
       inv_kin_controller_.activateStatePublishing(controller_nh);

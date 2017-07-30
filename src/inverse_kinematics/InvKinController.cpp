@@ -1,4 +1,4 @@
-#include <compliant_ros_controller/InvKinController.h>
+#include <compliant_ros_controller/inverse_kinematics/InvKinController.h>
 #include <compliant_ros_controller/ConversionHelper.h>
 #include <eigen_conversions/eigen_msg.h>
 
@@ -67,7 +67,7 @@ namespace compliant_controller {
         moveit_msgs::MoveItErrorCodes error_code;
         if (!joint_model_group_->getSolverInstance()->searchPositionIK(pose_msg,q_, 0.0003, solution_, error_code)) {
             ROS_WARN_STREAM_THROTTLE(1, "Computing IK from " << joint_model_group_->getSolverInstance()->getBaseFrame() << " to " <<
-                                     joint_model_group_->getSolverInstance()->getTipFrame() << " failed. Error code: " << error_code.val);
+                                     joint_model_group_->getSolverInstance()->getTipFrame() << " failed. Error code: " << error_code.val << " (" << moveitErrCodeToString(error_code.val) << ")");
             return false;
         }
 
@@ -172,5 +172,17 @@ namespace compliant_controller {
        state_msg.effort.resize(state.size(), 0);
        state_msg.velocity.resize(state.size(), 0);
        joint_state_publisher_.publish(state_msg);
+   }
+
+   std::string InvKinController::moveitErrCodeToString(int32_t code) {
+      switch (code) {
+        case moveit_msgs::MoveItErrorCodes::FAILURE:
+            return "FAILURE";
+        case moveit_msgs::MoveItErrorCodes::TIMED_OUT:
+            return "TIME_OUT";
+        default:
+            return "";
+      }
+      return "";
    }
 }

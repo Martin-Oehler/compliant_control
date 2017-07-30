@@ -1,4 +1,4 @@
-#include <compliant_ros_controller/BoundAdmittanceController.h>
+#include <compliant_ros_controller/compliance/BoundAdmittanceController.h>
 
 namespace compliant_controller {
     void BoundAdmittanceController::init(double inertia, double damping, double stiffness) {

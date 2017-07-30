@@ -26,6 +26,9 @@ namespace compliant_controller {
     private:
         void publishState(const ros::Time &time, const VectorNd& state);
         void publishState(const ros::Time &time, const std::vector<double>& state);
+
+        std::string moveitErrCodeToString(int32_t code);
+
         ros::Publisher joint_state_publisher_;
         bool publish_state_;
         int seq_counter_;

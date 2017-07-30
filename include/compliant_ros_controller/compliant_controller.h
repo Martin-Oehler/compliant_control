@@ -56,8 +56,8 @@
 
 // compliant control
 #include <compliant_ros_controller/hardware_interface_adapter.h>
-#include <compliant_ros_controller/AdmittanceController.h>
-#include <compliant_ros_controller/AdmittanceParamManager.h>
+#include <compliant_ros_controller/compliance/AdmittanceController.h>
+#include <compliant_ros_controller/compliance/AdmittanceParamManager.h>
 
 #include <hardware_interface/internal/demangle_symbol.h>
 
@@ -65,6 +65,7 @@
 #include <geometry_msgs/PoseStamped.h>
 
 #include <compliant_ros_controller/ConversionHelper.h>
+#include <robot_transforms/robot_transforms.h>
 
 namespace compliant_controller
 {
@@ -139,6 +140,7 @@ private:
   std::vector<JointHandle>  joints_;             ///< Handles to controlled joints.
   std::vector<std::string>  joint_names_;        ///< Controlled joint names.
   std::vector<std::string>  segment_names_;      ///< Controlled segments (links)
+  std::string base_link_;
 
   CartState state_cmd_;        ///< virtual set-point
   CartState desired_state_;    ///< compliant set-point
@@ -154,6 +156,9 @@ private:
   // additional hardware interfaces
   hardware_interface::ForceTorqueSensorHandle force_torque_sensor_handle_;
   bool ft_interface_found_;
+
+  // Forward kinematics
+  robot_tools::RobotTransforms transforms_;
 
 };
 

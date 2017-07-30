@@ -1,8 +1,8 @@
 #ifndef ADMITTANCE_CONTROLLER_H
 #define ADMITTANCE_CONTROLLER_H
 
-#include <compliant_ros_controller/BoundAdmittanceController.h>
-#include <compliant_ros_controller/ZeroAdmittanceController.h>
+#include <compliant_ros_controller/compliance/BoundAdmittanceController.h>
+#include <compliant_ros_controller/compliance/ZeroAdmittanceController.h>
 #include <compliant_ros_controller/CustomTypes.h>
 
 
@@ -35,9 +35,9 @@ namespace compliant_controller {
         void setTransSpeedLimit(double speed_limit);
         void setRotSpeedLimit(double speed_limit);
 
-        void activateStatePublishing(ros::NodeHandle& nh);
+        void activateStatePublishing(ros::NodeHandle& nh, std::string frame_id);
     private:
-        void publishCompliantPose(const ros::Time &time, Vector6d& pose);
+        void publishCompliantPose(const ros::Time &time, Vector6d& pose, std::string frame_id);
 
         BoundAdmittanceController bound_addm_controller_; // mode 0
         ZeroAdmittanceController zero_addm_controller_; // mode 1
@@ -47,6 +47,7 @@ namespace compliant_controller {
         ros::Publisher pose_publisher_;
         bool publish_state_;
         int seq_counter_;
+        std::string frame_;
 
     };
 }
